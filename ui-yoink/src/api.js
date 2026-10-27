@@ -19,3 +19,19 @@ export const catalogApi = {
     return (await api.get('/api/categories')).data;
   },
 };
+
+export const cartApi = {
+  async getCart() {
+    return (await api.get('/api/cart')).data.cart;
+  },
+  async addItem(productId, quantity = 1) {
+    return (await api.post('/api/cart/items', { productId, quantity })).data.cart;
+  },
+  async updateItem(productId, quantity) {
+    return (await api.patch(`/api/cart/items/${encodeURIComponent(productId)}`, { quantity })).data
+      .cart;
+  },
+  async removeItem(productId) {
+    return (await api.delete(`/api/cart/items/${encodeURIComponent(productId)}`)).data.cart;
+  },
+};

@@ -16,8 +16,16 @@ export default function ProductListPage() {
           <p>Thoughtful essentials, made to be used and loved.</p>
         </div>
       </section>
-      <CatalogToolbar {...catalog} onChange={catalog.changeParams} onSearch={catalog.submitSearch} />
-      {error && <p className="notice error" role="alert">{error}</p>}
+      <CatalogToolbar
+        {...catalog}
+        onChange={catalog.changeParams}
+        onSearch={catalog.submitSearch}
+      />
+      {error && (
+        <p className="notice error" role="alert">
+          {error}
+        </p>
+      )}
       {loading ? (
         <p className="notice">Loading products…</p>
       ) : !error && result.products.length === 0 ? (
@@ -26,7 +34,11 @@ export default function ProductListPage() {
         <>
           <p className="result-count">{result.pagination?.total || 0} products</p>
           <ProductGrid products={result.products} />
-          <ProductPagination page={page} totalPages={result.pagination?.totalPages || 0} onChange={catalog.changeParams} />
+          <ProductPagination
+            page={page}
+            totalPages={result.pagination?.totalPages || 0}
+            onChange={catalog.changeParams}
+          />
         </>
       )}
     </main>

@@ -11,7 +11,9 @@ export function getApiErrorMessage(error, fallback, notFoundMessage) {
 
 export function updateCatalogSearchParams(searchParams, updates) {
   const next = new URLSearchParams(searchParams);
-  Object.entries(updates).forEach(([key, value]) => (value ? next.set(key, value) : next.delete(key)));
+  Object.entries(updates).forEach(([key, value]) =>
+    value ? next.set(key, value) : next.delete(key),
+  );
   if (!Object.hasOwn(updates, 'page')) next.delete('page');
   return next;
 }

@@ -242,6 +242,113 @@ header button {
 .availability.unavailable {
   color: #a33b32;
 }
+.cart-page {
+  max-width: 1000px;
+  margin: auto;
+  padding: 40px 24px 72px;
+}
+.cart-page h1 {
+  font-family: 'Playfair Display', serif;
+  font-size: 42px;
+}
+.cart-empty {
+  padding: 36px 0;
+}
+.primary-link,
+.checkout-button {
+  display: inline-block;
+  border: 0;
+  border-radius: 4px;
+  padding: 13px 20px;
+  background: #314939;
+  color: white;
+  text-align: center;
+  cursor: pointer;
+}
+.cart-item {
+  display: grid;
+  grid-template-columns: 120px 1fr auto;
+  gap: 22px;
+  align-items: center;
+  padding: 20px 0;
+  border-bottom: 1px solid #e2e5dd;
+}
+.cart-item > img,
+.cart-missing {
+  width: 120px;
+  height: 130px;
+  object-fit: cover;
+  background: #eeefe9;
+}
+.cart-missing {
+  display: grid;
+  place-items: center;
+  color: #747a72;
+  font-size: 13px;
+}
+.cart-item-info h2 {
+  margin: 0 0 8px;
+  font-size: 18px;
+}
+.cart-item-info p {
+  color: #697168;
+  margin: 6px 0;
+}
+.cart-actions {
+  display: grid;
+  justify-items: end;
+  gap: 12px;
+}
+.quantity-control {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+}
+.quantity-control button {
+  width: 32px;
+  height: 32px;
+  background: white;
+  border: 1px solid #dfe3da;
+  cursor: pointer;
+}
+.quantity-control button:disabled,
+button:disabled {
+  opacity: 0.5;
+  cursor: default;
+}
+.text-button {
+  background: transparent;
+  border: 0;
+  color: #6d493f;
+  text-decoration: underline;
+  cursor: pointer;
+}
+.cart-summary {
+  max-width: 380px;
+  margin: 28px 0 24px auto;
+}
+.cart-summary p {
+  display: flex;
+  justify-content: space-between;
+}
+.cart-summary .checkout-button {
+  width: 100%;
+  margin-top: 12px;
+}
+.disabled-link {
+  opacity: 0.5;
+  cursor: default;
+}
+.cart-add-control {
+  grid-column: 2;
+}
+.cart-add-control .checkout-button {
+  width: 100%;
+}
+.cart-add-control p {
+  color: #697168;
+  font-size: 14px;
+}
 @media (max-width: 900px) {
   .product-grid {
     grid-template-columns: repeat(3, minmax(0, 1fr));
@@ -292,6 +399,27 @@ header button {
   .detail-layout {
     grid-template-columns: 1fr;
     gap: 28px;
+  }
+  .cart-add-control {
+    grid-column: 1;
+  }
+  .cart-page {
+    padding: 22px 16px 50px;
+  }
+  .cart-item {
+    grid-template-columns: 80px 1fr;
+    gap: 14px;
+  }
+  .cart-item > img,
+  .cart-missing {
+    width: 80px;
+    height: 95px;
+  }
+  .cart-actions {
+    grid-column: 2;
+    justify-items: start;
+    display: flex;
+    align-items: center;
   }
   .detail-copy {
     position: static;

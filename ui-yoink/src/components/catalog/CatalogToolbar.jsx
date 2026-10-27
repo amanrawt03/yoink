@@ -1,4 +1,13 @@
-export default function CatalogToolbar({ search, setSearch, categories, category, sortBy, order, onSearch, onChange }) {
+export default function CatalogToolbar({
+  search,
+  setSearch,
+  categories,
+  category,
+  sortBy,
+  order,
+  onSearch,
+  onChange,
+}) {
   const sortValue = sortBy === 'price' ? (order === 'asc' ? 'price-asc' : 'price-desc') : sortBy;
 
   function changeSort(event) {
@@ -9,12 +18,25 @@ export default function CatalogToolbar({ search, setSearch, categories, category
   return (
     <section className="catalog-controls" aria-label="Product filters">
       <form className="search-form" onSubmit={onSearch}>
-        <input aria-label="Search products" value={search} onChange={(event) => setSearch(event.target.value)} placeholder="Search products" />
+        <input
+          aria-label="Search products"
+          value={search}
+          onChange={(event) => setSearch(event.target.value)}
+          placeholder="Search products"
+        />
         <button type="submit">Search</button>
       </form>
-      <select aria-label="Filter by category" value={category} onChange={(event) => onChange({ category: event.target.value })}>
+      <select
+        aria-label="Filter by category"
+        value={category}
+        onChange={(event) => onChange({ category: event.target.value })}
+      >
         <option value="">All categories</option>
-        {categories.map((item) => <option key={item._id} value={item._id}>{item.name}</option>)}
+        {categories.map((item) => (
+          <option key={item._id} value={item._id}>
+            {item.name}
+          </option>
+        ))}
       </select>
       <select aria-label="Sort products" value={sortValue} onChange={changeSort}>
         <option value="newest">Newest</option>
