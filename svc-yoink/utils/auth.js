@@ -29,7 +29,11 @@ export function getAuthToken(req) {
   for (const part of rawCookie.split(';')) {
     const separator = part.indexOf('=');
     if (separator < 0 || part.slice(0, separator).trim() !== AUTH_COOKIE) continue;
-    try { return decodeURIComponent(part.slice(separator + 1).trim()); } catch { return null; }
+    try {
+      return decodeURIComponent(part.slice(separator + 1).trim());
+    } catch {
+      return null;
+    }
   }
   return null;
 }

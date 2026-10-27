@@ -2,6 +2,9 @@ import { Link, Outlet, Route, Routes, useNavigate } from 'react-router-dom';
 import AuthPage from './pages/AuthPage.jsx';
 import { AdminRoute, ProtectedRoute } from './components/RouteGuards.jsx';
 import { useAuth } from './context/AuthContext.jsx';
+import ProductListPage from './pages/ProductListPage.jsx';
+import ProductDetailsPage from './pages/ProductDetailsPage.jsx';
+import './styles.css';
 
 function Layout() {
   const { user, logout } = useAuth();
@@ -40,15 +43,8 @@ export default function App() {
   return (
     <Routes>
       <Route element={<Layout />}>
-        <Route
-          path="/"
-          element={
-            <main>
-              <h1>Yoink</h1>
-              <p>Authentication is ready.</p>
-            </main>
-          }
-        />
+        <Route path="/" element={<ProductListPage />} />
+        <Route path="/products/:idOrSlug" element={<ProductDetailsPage />} />
         <Route path="/login" element={<AuthPage mode="login" />} />
         <Route path="/register" element={<AuthPage mode="register" />} />
         <Route element={<ProtectedRoute />}>
