@@ -38,12 +38,9 @@ export async function register(req, res, next) {
       password.length < 8 ||
       password.length > 128
     ) {
-      return res
-        .status(400)
-        .json({
-          message:
-            'Provide a name (2–80 characters), valid email, and password (8–128 characters).',
-        });
+      return res.status(400).json({
+        message: 'Provide a name (2–80 characters), valid email, and password (8–128 characters).',
+      });
     }
     if (await User.exists({ email }))
       return res.status(409).json({ message: 'An account with this email already exists.' });
