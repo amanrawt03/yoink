@@ -11,8 +11,9 @@ export function ProtectedRoute() {
 export function AdminRoute() {
   const { user, loading } = useAuth();
   if (loading) return <p role="status">Restoring your session…</p>;
+  const location = useLocation();
   return !user ? (
-    <Navigate to="/login" replace />
+    <Navigate to="/login" replace state={{ from: location }} />
   ) : user.role === 'admin' ? (
     <Outlet />
   ) : (

@@ -4,10 +4,14 @@ import { AdminRoute, ProtectedRoute } from './components/RouteGuards.jsx';
 import { useAuth } from './context/AuthContext.jsx';
 import ProductListPage from './pages/ProductListPage.jsx';
 import ProductDetailsPage from './pages/ProductDetailsPage.jsx';
+import CartPage from './pages/CartPage.jsx';
+import { useCart } from './context/CartContext.jsx';
 import './styles.css';
 
 function Layout() {
   const { user, logout } = useAuth();
+  const { cart } = useCart();
+  const cartCount = cart.items.reduce((total, item) => total + item.quantity, 0);
   const navigate = useNavigate();
   const signOut = async () => {
     try {
@@ -21,6 +25,7 @@ function Layout() {
       <header>
         <Link to="/">Yoink</Link>
         <nav>
+          {user && <Link to="/cart">Cart ({cartCount})</Link>}
           {user ? (
             <>
               <span>{user.name}</span>
@@ -48,6 +53,17 @@ export default function App() {
         <Route path="/login" element={<AuthPage mode="login" />} />
         <Route path="/register" element={<AuthPage mode="register" />} />
         <Route element={<ProtectedRoute />}>
+          <Route path="/cart" element={<CartPage />} />
+          <Route
+            path="/checkout"
+            element={
+              <main>
+                <h1>Checkout</h1>
+                <p>Checkout is coming in the next module.</p>
+                <Link to="/cart">Return to cart</Link>
+              </main>
+            }
+          />
           <Route
             path="/account"
             element={

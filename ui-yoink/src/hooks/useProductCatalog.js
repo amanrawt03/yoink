@@ -1,7 +1,11 @@
 import { useEffect, useState } from 'react';
 import { useSearchParams } from 'react-router-dom';
 import { catalogApi } from '../api.js';
-import { getApiErrorMessage, PRODUCT_PAGE_SIZE, updateCatalogSearchParams } from '../utils/catalog.js';
+import {
+  getApiErrorMessage,
+  PRODUCT_PAGE_SIZE,
+  updateCatalogSearchParams,
+} from '../utils/catalog.js';
 
 export default function useProductCatalog() {
   const [searchParams, setSearchParams] = useSearchParams();
@@ -17,28 +21,45 @@ export default function useProductCatalog() {
 
   useEffect(() => {
     let active = true;
-    catalogApi.listCategories()
-      .then(({ categories: values }) => { if (active) setCategories(values); })
-      .catch((error) => { if (active) setError(getApiErrorMessage(error, 'Categories could not be loaded.')); });
-    return () => { active = false; };
+    catalogApi
+      .listCategories()
+      .then(({ categories: values }) => {
+        if (active) setCategories(values);
+      })
+      .catch((error) => {
+        if (active) setError(getApiErrorMessage(error, 'Categories could not be loaded.'));
+      });
+    return () => {
+      active = false;
+    };
   }, []);
 
   useEffect(() => {
     let active = true;
     setLoading(true);
     setError('');
-    catalogApi.listProducts({
-      search: searchParams.get('search') || undefined,
-      category: category || undefined,
-      sortBy,
-      order,
-      page,
-      limit: PRODUCT_PAGE_SIZE,
-    })
-      .then((data) => { if (active) setResult(data); })
-      .catch((error) => { if (active) setError(getApiErrorMessage(error, 'Products could not be loaded. Please try again.')); })
-      .finally(() => { if (active) setLoading(false); });
-    return () => { active = false; };
+    catalogApi
+      .listProducts({
+        search: searchParams.get('search') || undefined,
+        category: category || undefined,
+        sortBy,
+        order,
+        page,
+        limit: PRODUCT_PAGE_SIZE,
+      })
+      .then((data) => {
+        if (active) setResult(data);
+      })
+      .catch((error) => {
+        if (active)
+          setError(getApiErrorMessage(error, 'Products could not be loaded. Please try again.'));
+      })
+      .finally(() => {
+        if (active) setLoading(false);
+      });
+    return () => {
+      active = false;
+    };
   }, [searchParams, category, sortBy, order, page]);
 
   function changeParams(updates) {
@@ -50,5 +71,18 @@ export default function useProductCatalog() {
     changeParams({ search: search.trim() });
   }
 
-  return { search, setSearch, categories, result, loading, error, category, sortBy, order, page, changeParams, submitSearch };
+  return {
+    search,
+    setSearch,
+    categories,
+    result,
+    loading,
+    error,
+    category,
+    sortBy,
+    order,
+    page,
+    changeParams,
+    submitSearch,
+  };
 }

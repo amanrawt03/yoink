@@ -14,7 +14,11 @@ export default function ProductCard({ product }) {
         </div>
         <strong>{formatCurrency(product.price)}</strong>
       </div>
-      {product.numReviews > 0 && <p className="rating">★ {Number(product.ratingAvg).toFixed(1)} <span>({product.numReviews})</span></p>}
+      {product.numReviews > 0 && (
+        <p className="rating">
+          ★ {Number(product.ratingAvg).toFixed(1)} <span>({product.numReviews})</span>
+        </p>
+      )}
     </Link>
   );
 }

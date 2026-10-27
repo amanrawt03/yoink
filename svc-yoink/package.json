@@ -4,7 +4,7 @@
   "type": "module",
   "main": "server.js",
   "scripts": {
-    "start": "node server.js",
+    "start": "nodemon server.js",
     "seed": "node seed/seed.js",
     "test": "node --test",
     "format": "npx --yes prettier@3.6.2 --write \"**/*.{js,json}\"",

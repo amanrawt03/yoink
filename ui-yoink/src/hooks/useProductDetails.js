@@ -12,13 +12,27 @@ export default function useProductDetails(idOrSlug) {
     setLoading(true);
     setError('');
     setProduct(null);
-    catalogApi.getProduct(idOrSlug)
-      .then(({ product: value }) => { if (active) setProduct(value); })
-      .catch((requestError) => {
-        if (active) setError(getApiErrorMessage(requestError, 'Product details could not be loaded.', 'This product is no longer available.'));
+    catalogApi
+      .getProduct(idOrSlug)
+      .then(({ product: value }) => {
+        if (active) setProduct(value);
       })
-      .finally(() => { if (active) setLoading(false); });
-    return () => { active = false; };
+      .catch((requestError) => {
+        if (active)
+          setError(
+            getApiErrorMessage(
+              requestError,
+              'Product details could not be loaded.',
+              'This product is no longer available.',
+            ),
+          );
+      })
+      .finally(() => {
+        if (active) setLoading(false);
+      });
+    return () => {
+      active = false;
+    };
   }, [idOrSlug]);
 
   return { product, loading, error };
