@@ -6,7 +6,9 @@
   "scripts": {
     "dev": "vite",
     "build": "vite build",
-    "preview": "vite preview"
+    "preview": "vite preview",
+    "format": "npx --yes prettier@3.6.2 --write \"src/**/*.{js,jsx,json,css}\" \"*.{js,jsx,json,html}\"",
+    "format:check": "npx --yes prettier@3.6.2 --check \"src/**/*.{js,jsx,json,css}\" \"*.{js,jsx,json,html}\""
   },
   "dependencies": {
     "axios": "^1.11.0",
