@@ -9,7 +9,14 @@ import Review from '../models/Review.js';
 const connectDB = async () => {
   try {
     const conn = await mongoose.connect(process.env.MONGO_URI);
-    await Promise.all([User.init(), Category.init(), Product.init(), Cart.init(), Order.init(), Review.init()]);
+    await Promise.all([
+      User.init(),
+      Category.init(),
+      Product.init(),
+      Cart.init(),
+      Order.init(),
+      Review.init(),
+    ]);
     console.log(`MongoDB connected: ${conn.connection.host}`);
   } catch (error) {
     console.error(`MongoDB connection error: ${error.message}`);

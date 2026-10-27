@@ -7,3 +7,15 @@ const api = axios.create({
 });
 
 export default api;
+
+export const catalogApi = {
+  async listProducts(params) {
+    return (await api.get('/api/products', { params })).data;
+  },
+  async getProduct(idOrSlug) {
+    return (await api.get(`/api/products/${encodeURIComponent(idOrSlug)}`)).data;
+  },
+  async listCategories() {
+    return (await api.get('/api/categories')).data;
+  },
+};
