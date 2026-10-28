@@ -73,6 +73,18 @@ export const orderApi = {
   },
 };
 
+export const accountApi = {
+  async addAddress(address) {
+    return (await api.post('/api/auth/addresses', address)).data;
+  },
+  async makeDefaultAddress(addressId) {
+    return (await api.patch(`/api/auth/addresses/${encodeURIComponent(addressId)}/default`)).data;
+  },
+  async deleteAddress(addressId) {
+    return (await api.delete(`/api/auth/addresses/${encodeURIComponent(addressId)}`)).data;
+  },
+};
+
 export const adminApi = {
   async stats() {
     return (await api.get('/api/admin/dashboard/stats')).data.stats;

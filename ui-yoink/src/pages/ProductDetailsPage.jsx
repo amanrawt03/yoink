@@ -14,6 +14,7 @@ export default function ProductDetailsPage() {
   const { addItem } = useCart();
   const navigate = useNavigate();
   const [adding, setAdding] = useState(false);
+  const [snatched, setSnatched] = useState(false);
   const [cartFeedback, setCartFeedback] = useState('');
   const [reviews, setReviews] = useState([]);
   const [reviewsLoading, setReviewsLoading] = useState(true);
@@ -87,6 +88,8 @@ export default function ProductDetailsPage() {
     try {
       await addItem(product._id);
       setCartFeedback('Added to your cart.');
+      setSnatched(true);
+      window.setTimeout(() => setSnatched(false), 250);
     } catch (err) {
       setCartFeedback(err.response?.data?.message || 'Unable to add this item.');
     } finally {
@@ -121,7 +124,7 @@ export default function ProductDetailsPage() {
         <ProductInformation product={product} />
         <div className="cart-add-control">
           <button
-            className="checkout-button"
+            className={`checkout-button${snatched ? ' snatch' : ''}`}
             onClick={addToCart}
             disabled={adding || product.stock < 1}
           >

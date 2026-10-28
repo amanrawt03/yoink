@@ -14,7 +14,65 @@ import AdminDashboardPage from './pages/AdminDashboardPage.jsx';
 import AdminProductsPage from './pages/AdminProductsPage.jsx';
 import AdminUsersPage from './pages/AdminUsersPage.jsx';
 import { useCart } from './context/CartContext.jsx';
+import YoinkLogo from './components/YoinkLogo.jsx';
 import './styles.css';
+
+function NavIcon({ name }) {
+  const paths = {
+    cart: (
+      <>
+        <path d="M2 3h2l2.2 11.2a2 2 0 0 0 2 1.6h8.9a2 2 0 0 0 1.9-1.4L21 8H5" />
+        <circle cx="9" cy="20" r="1" />
+        <circle cx="18" cy="20" r="1" />
+      </>
+    ),
+    orders: (
+      <>
+        <path d="M6 3h12a2 2 0 0 1 2 2v16l-3-2-4 2-4-2-3 2V5a2 2 0 0 1 2-2Z" />
+        <path d="M9 8h6M9 12h6" />
+      </>
+    ),
+    profile: (
+      <>
+        <circle cx="12" cy="8" r="4" />
+        <path d="M4 21a8 8 0 0 1 16 0" />
+      </>
+    ),
+    login: (
+      <>
+        <circle cx="12" cy="8" r="4" />
+        <path d="M4 21a8 8 0 0 1 16 0M19 8h5m-2.5-2.5v5" />
+      </>
+    ),
+    register: (
+      <>
+        <circle cx="12" cy="8" r="4" />
+        <path d="M4 21a8 8 0 0 1 16 0M19 8h5m-2.5-2.5v5" />
+      </>
+    ),
+    admin: (
+      <>
+        <path d="M12 22s8-4 8-11V5l-8-3-8 3v6c0 7 8 11 8 11Z" />
+        <path d="m9 12 2 2 4-4" />
+      </>
+    ),
+    chevron: <path d="m7 10 5 5 5-5" />,
+  };
+  return (
+    <svg
+      className={`nav-icon nav-icon-${name}`}
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="1.8"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      aria-hidden="true"
+    >
+      {paths[name]}
+    </svg>
+  );
+}
 
 function Layout() {
   const { user, logout } = useAuth();
@@ -31,20 +89,53 @@ function Layout() {
   return (
     <>
       <header>
-        <Link to="/">Yoink</Link>
+        <Link to="/" aria-label="Yoink home">
+          <YoinkLogo />
+        </Link>
         <nav>
-          {user && <Link to="/cart">Cart ({cartCount})</Link>}
-          {user && <Link to="/orders">Orders</Link>}
-          {user?.role === 'admin' && <Link to="/admin">Admin</Link>}
+          {user && (
+            <Link className="nav-link" to="/cart" aria-label={`Cart, ${cartCount} items`}>
+              <NavIcon name="cart" />
+              <span className="nav-label">Cart</span>
+              <span className="cart-count">{cartCount}</span>
+            </Link>
+          )}
+          {user && (
+            <Link className="nav-link" to="/orders">
+              <NavIcon name="orders" />
+              <span className="nav-label">Orders</span>
+            </Link>
+          )}
+          {user?.role === 'admin' && (
+            <Link className="nav-link" to="/admin">
+              <NavIcon name="admin" />
+              <span className="nav-label">Admin</span>
+            </Link>
+          )}
           {user ? (
-            <>
-              <span>{user.name}</span>
-              <button onClick={signOut}>Log out</button>
-            </>
+            <details className="profile-menu">
+              <summary aria-label={`Profile menu for ${user.name}`}>
+                <NavIcon name="profile" />
+                <span className="profile-name">{user.name}</span>
+                <NavIcon name="chevron" />
+              </summary>
+              <div className="profile-dropdown">
+                <p className="profile-welcome">Welcome, {user.name.trim().split(/\s+/)[0]}</p>
+                <button className="profile-logout" onClick={signOut}>
+                  Log out
+                </button>
+              </div>
+            </details>
           ) : (
             <>
-              <Link to="/login">Log in</Link>
-              <Link to="/register">Register</Link>
+              <Link className="nav-link" to="/login">
+                <NavIcon name="profile" />
+                <span className="nav-label">Log in</span>
+              </Link>
+              <Link className="nav-link" to="/register">
+                <NavIcon name="register" />
+                <span className="nav-label">Register</span>
+              </Link>
             </>
           )}
         </nav>

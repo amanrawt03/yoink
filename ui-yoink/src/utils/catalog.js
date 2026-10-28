@@ -1,7 +1,7 @@
 export const PRODUCT_PAGE_SIZE = 12;
 
 export function formatCurrency(price) {
-  return new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD' }).format(price);
+  return `₹ ${new Intl.NumberFormat('en-IN', { maximumFractionDigits: 2 }).format(price)}`;
 }
 
 export function getApiErrorMessage(error, fallback, notFoundMessage) {

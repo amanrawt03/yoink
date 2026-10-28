@@ -1,28 +1,43 @@
 import { useRef, useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useCart } from '../context/CartContext.jsx';
-import { orderApi } from '../api.js';
+import { useAuth } from '../context/AuthContext.jsx';
+import { accountApi, orderApi } from '../api.js';
 import { formatCurrency } from '../utils/catalog.js';
 
-const initialAddress = {
-  fullName: '',
+const emptyAddress = (name = '') => ({
+  label: 'Home',
+  fullName: name,
   addressLine1: '',
   addressLine2: '',
   city: '',
   state: '',
   postalCode: '',
   country: '',
-};
+});
 
 export default function CheckoutPage() {
   const { cart, loading, refreshCart } = useCart();
-  const [address, setAddress] = useState(initialAddress);
+  const { user, refreshUser } = useAuth();
+  const [savedAddresses, setSavedAddresses] = useState(() => user?.savedAddresses || []);
+  const [defaultAddressId, setDefaultAddressId] = useState(() =>
+    String(user?.defaultAddressId || user?.savedAddresses?.[0]?._id || ''),
+  );
+  const [selectedAddressId, setSelectedAddressId] = useState(() =>
+    String(user?.defaultAddressId || user?.savedAddresses?.[0]?._id || ''),
+  );
+  const [useNewAddress, setUseNewAddress] = useState(() => !user?.savedAddresses?.length);
+  const [address, setAddress] = useState(() => emptyAddress(user?.name));
+  const [saveAddress, setSaveAddress] = useState(true);
   const [busy, setBusy] = useState(false);
+  const [addressBusy, setAddressBusy] = useState(false);
   const [error, setError] = useState('');
+  const [addressError, setAddressError] = useState('');
   const idempotencyKey = useRef(
     window.crypto?.randomUUID?.() || `${Date.now()}-${Math.random().toString(36).slice(2)}`,
   );
   const navigate = useNavigate();
+
   if (loading)
     return (
       <main className="cart-page">
@@ -38,16 +53,80 @@ export default function CheckoutPage() {
         </Link>
       </main>
     );
+
   const invalidItems = cart.items.some(
     (item) => !item.available || item.quantity > item.product.stock,
   );
-  const update = (event) => setAddress({ ...address, [event.target.name]: event.target.value });
+  const activeSavedAddress = savedAddresses.find(
+    (saved) => String(saved._id) === String(selectedAddressId),
+  );
+  const update = (event) =>
+    setAddress((current) => ({ ...current, [event.target.name]: event.target.value }));
+  const updateSavedAddresses = async (response) => {
+    setSavedAddresses(response.savedAddresses);
+    setDefaultAddressId(String(response.defaultAddressId || ''));
+    await refreshUser();
+  };
+
+  const chooseNewAddress = () => {
+    setUseNewAddress(true);
+    setAddressError('');
+    setAddress((current) => ({ ...current, fullName: current.fullName || user?.name || '' }));
+  };
+
+  const setDefault = async (addressId) => {
+    setAddressBusy(true);
+    setAddressError('');
+    try {
+      const response = await accountApi.makeDefaultAddress(addressId);
+      await updateSavedAddresses(response);
+      setSelectedAddressId(String(addressId));
+      setUseNewAddress(false);
+    } catch (err) {
+      setAddressError(err.response?.data?.message || 'Could not update your default address.');
+    } finally {
+      setAddressBusy(false);
+    }
+  };
+
+  const removeAddress = async (addressId) => {
+    setAddressBusy(true);
+    setAddressError('');
+    try {
+      const response = await accountApi.deleteAddress(addressId);
+      await updateSavedAddresses(response);
+      if (!response.savedAddresses.length) setUseNewAddress(true);
+      if (String(selectedAddressId) === String(addressId)) {
+        setSelectedAddressId(
+          String(response.defaultAddressId || response.savedAddresses[0]?._id || ''),
+        );
+      }
+    } catch (err) {
+      setAddressError(err.response?.data?.message || 'Could not remove this saved address.');
+    } finally {
+      setAddressBusy(false);
+    }
+  };
+
   const submit = async (event) => {
     event.preventDefault();
     setError('');
+    setAddressError('');
     setBusy(true);
     try {
-      const order = await orderApi.createOrder(address, idempotencyKey.current);
+      let shippingAddress = activeSavedAddress;
+      if (useNewAddress) {
+        shippingAddress = address;
+        if (saveAddress) {
+          const response = await accountApi.addAddress(address);
+          await updateSavedAddresses(response);
+          shippingAddress = response.address;
+          setSelectedAddressId(String(response.address._id));
+          setUseNewAddress(false);
+          setSaveAddress(false);
+        }
+      }
+      const order = await orderApi.createOrder(shippingAddress, idempotencyKey.current);
       await refreshCart();
       navigate(`/orders/${order._id}`, { replace: true });
     } catch (err) {
@@ -57,10 +136,12 @@ export default function CheckoutPage() {
       setBusy(false);
     }
   };
+
   return (
-    <main className="cart-page">
+    <main className="cart-page checkout-page">
       <p className="eyebrow">CHECKOUT</p>
-      <h1>Shipping details</h1>
+      <h1>Where should we send it?</h1>
+      <p className="checkout-intro">Choose a saved address or add a new delivery spot.</p>
       {error && (
         <p className="notice error" role="alert">
           {error}
@@ -74,28 +155,147 @@ export default function CheckoutPage() {
       )}
       <div className="order-layout">
         <form className="checkout-form" onSubmit={submit}>
-          {Object.entries({
-            fullName: 'Full name',
-            addressLine1: 'Address line 1',
-            addressLine2: 'Address line 2 (optional)',
-            city: 'City',
-            state: 'State / province',
-            postalCode: 'Postal code',
-            country: 'Country',
-          }).map(([name, label]) => (
-            <label key={name}>
-              {label}
-              <input
-                name={name}
-                value={address[name]}
-                onChange={update}
-                required={name !== 'addressLine2'}
-                maxLength={200}
-                autoComplete={name === 'fullName' ? 'name' : undefined}
-              />
-            </label>
-          ))}
-          <button className="checkout-button" disabled={busy || invalidItems}>
+          {savedAddresses.length > 0 && (
+            <fieldset className="saved-addresses">
+              <legend>Saved addresses</legend>
+              <div className="saved-address-list">
+                {savedAddresses.map((saved) => (
+                  <div
+                    className={`saved-address${!useNewAddress && String(selectedAddressId) === String(saved._id) ? ' selected' : ''}`}
+                    key={saved._id}
+                  >
+                    <label className="saved-address-choice">
+                      <input
+                        type="radio"
+                        name="savedAddress"
+                        value={saved._id}
+                        checked={!useNewAddress && String(selectedAddressId) === String(saved._id)}
+                        onChange={() => {
+                          setUseNewAddress(false);
+                          setSelectedAddressId(String(saved._id));
+                        }}
+                      />
+                      <span className="saved-address-copy">
+                        <strong>
+                          {saved.label || 'Address'}
+                          {String(saved._id) === defaultAddressId && (
+                            <span className="default-tag">Default</span>
+                          )}
+                        </strong>
+                        <span>{saved.fullName}</span>
+                        <span>
+                          {saved.addressLine1}
+                          {saved.addressLine2 ? `, ${saved.addressLine2}` : ''}
+                        </span>
+                        <span>
+                          {saved.city}, {saved.state} {saved.postalCode}
+                        </span>
+                        <span>{saved.country}</span>
+                      </span>
+                    </label>
+                    <span className="saved-address-actions">
+                      {String(saved._id) !== defaultAddressId && (
+                        <button
+                          type="button"
+                          disabled={addressBusy || busy}
+                          onClick={() => setDefault(saved._id)}
+                        >
+                          Make default
+                        </button>
+                      )}
+                      <button
+                        type="button"
+                        disabled={addressBusy || busy}
+                        onClick={() => removeAddress(saved._id)}
+                      >
+                        Remove
+                      </button>
+                    </span>
+                  </div>
+                ))}
+              </div>
+            </fieldset>
+          )}
+
+          {savedAddresses.length > 0 && !useNewAddress ? (
+            <button className="new-address-toggle" type="button" onClick={chooseNewAddress}>
+              + Use a different address
+            </button>
+          ) : (
+            <section className="new-address-section">
+              <div className="new-address-heading">
+                <h2>{savedAddresses.length ? 'Add a different address' : 'Delivery address'}</h2>
+                {savedAddresses.length > 0 && (
+                  <button type="button" onClick={() => setUseNewAddress(false)}>
+                    Choose saved address
+                  </button>
+                )}
+              </div>
+              <div className="address-fields">
+                <label className="address-label-field">
+                  Address label
+                  <input
+                    name="label"
+                    value={address.label}
+                    onChange={update}
+                    maxLength={40}
+                    placeholder="Home or work"
+                  />
+                </label>
+                {Object.entries({
+                  fullName: 'Full name',
+                  addressLine1: 'Address line 1',
+                  addressLine2: 'Address line 2 (optional)',
+                  city: 'City',
+                  state: 'State / province',
+                  postalCode: 'Postal code',
+                  country: 'Country',
+                }).map(([name, label]) => (
+                  <label
+                    key={name}
+                    className={
+                      name === 'addressLine1' || name === 'addressLine2' ? 'address-wide' : ''
+                    }
+                  >
+                    {label}
+                    <input
+                      name={name}
+                      value={address[name]}
+                      onChange={update}
+                      required={name !== 'addressLine2'}
+                      maxLength={200}
+                      autoComplete={
+                        name === 'fullName'
+                          ? 'name'
+                          : name === 'postalCode'
+                            ? 'postal-code'
+                            : undefined
+                      }
+                    />
+                  </label>
+                ))}
+              </div>
+              <label className="save-address-option">
+                <input
+                  type="checkbox"
+                  checked={saveAddress}
+                  onChange={(event) => setSaveAddress(event.target.checked)}
+                />
+                Save this address to my account for next time
+              </label>
+            </section>
+          )}
+          {addressError && (
+            <p className="notice error" role="alert">
+              {addressError}
+            </p>
+          )}
+          <button
+            className="checkout-button place-order-button"
+            disabled={
+              busy || addressBusy || invalidItems || (!useNewAddress && !activeSavedAddress)
+            }
+          >
             {busy ? 'Placing order…' : 'Place COD order'}
           </button>
         </form>
