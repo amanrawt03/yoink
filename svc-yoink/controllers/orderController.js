@@ -29,19 +29,15 @@ export function validShippingAddress(value) {
 export async function createOrder(req, res, next) {
   const key = req.get('Idempotency-Key');
   if (!key || key.length > 128 || !/^[\w.-]+$/.test(key))
-    return res
-      .status(400)
-      .json({
-        message:
-          'A valid Idempotency-Key header is required (up to 128 letters, numbers, dots, underscores, or hyphens).',
-      });
+    return res.status(400).json({
+      message:
+        'A valid Idempotency-Key header is required (up to 128 letters, numbers, dots, underscores, or hyphens).',
+    });
   if (!validShippingAddress(req.body?.shippingAddress))
-    return res
-      .status(400)
-      .json({
-        message:
-          'Shipping address must include fullName, addressLine1, city, state, postalCode, and country.',
-      });
+    return res.status(400).json({
+      message:
+        'Shipping address must include fullName, addressLine1, city, state, postalCode, and country.',
+    });
 
   const address = Object.fromEntries(
     addressFields.map((field) => [field, (req.body.shippingAddress[field] || '').trim()]),
@@ -144,12 +140,10 @@ export async function createOrder(req, res, next) {
         error.message || '',
       )
     )
-      return res
-        .status(503)
-        .json({
-          message:
-            'Checkout requires MongoDB transaction support. Configure MongoDB as a replica set or Atlas cluster and retry.',
-        });
+      return res.status(503).json({
+        message:
+          'Checkout requires MongoDB transaction support. Configure MongoDB as a replica set or Atlas cluster and retry.',
+      });
     return next(error);
   } finally {
     await session?.endSession();
@@ -179,9 +173,26 @@ export async function getOrder(req, res, next) {
   }
 }
 
-export async function getAllOrders(_req, res, next) {
+export async function getAllOrders(req, res, next) {
   try {
-    return res.json({ orders: await Order.find().sort({ createdAt: -1 }) });
+    const page = Number(req.query.page ?? 1);
+    const limit = Number(req.query.limit ?? 20);
+    if (!Number.isInteger(page) || page < 1 || !Number.isInteger(limit) || limit < 1)
+      return res.status(400).json({ message: 'Page and limit must be positive integers.' });
+    const pageSize = Math.min(limit, 50);
+    const [orders, total] = await Promise.all([
+      Order.find()
+        .populate('user', 'name email')
+        .sort({ createdAt: -1 })
+        .skip((page - 1) * pageSize)
+        .limit(pageSize)
+        .lean(),
+      Order.countDocuments(),
+    ]);
+    return res.json({
+      orders,
+      pagination: { total, page, pageSize, totalPages: Math.ceil(total / pageSize) },
+    });
   } catch (error) {
     return next(error);
   }

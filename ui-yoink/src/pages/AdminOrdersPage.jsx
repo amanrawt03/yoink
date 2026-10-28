@@ -5,22 +5,32 @@ import { formatCurrency } from '../utils/catalog.js';
 
 const statuses = ['pending', 'processing', 'shipped', 'delivered', 'cancelled'];
 export default function AdminOrdersPage() {
-  const [orders, setOrders] = useState(null);
+  const [result, setResult] = useState(null);
+  const [page, setPage] = useState(1);
   const [error, setError] = useState('');
   useEffect(() => {
+    setResult(null);
     orderApi
-      .allOrders()
-      .then(setOrders)
+      .allOrders({ page, limit: 20 })
+      .then(setResult)
       .catch((err) =>
         setError(
           err.response?.status === 403 ? 'Admin access is required.' : 'Unable to load orders.',
         ),
       );
-  }, []);
+  }, [page]);
   const change = async (id, status) => {
+    const current = result.orders.find((order) => order._id === id);
+    if (status !== current?.status && !window.confirm(`Change order status to “${status}”?`))
+      return;
     try {
       const updated = await orderApi.updateStatus(id, status);
-      setOrders((current) => current.map((order) => (order._id === id ? updated : order)));
+      setResult((currentResult) => ({
+        ...currentResult,
+        orders: currentResult.orders.map((order) =>
+          order._id === id ? { ...updated, user: order.user } : order,
+        ),
+      }));
       setError('');
     } catch (err) {
       setError(err.response?.data?.message || 'Unable to update order.');
@@ -34,16 +44,18 @@ export default function AdminOrdersPage() {
           {error}
         </p>
       )}
-      {!orders && !error && <p role="status">Loading orders…</p>}
-      {orders?.length === 0 && <p>No orders yet.</p>}
-      {orders?.map((order) => (
+      {!result && !error && <p role="status">Loading orders…</p>}
+      {result?.orders.length === 0 && <p>No orders yet.</p>}
+      {result?.orders.map((order) => (
         <article className="order-row" key={order._id}>
           <div>
             <strong>
               <Link to={`/orders/${order._id}`}>{order._id}</Link>
             </strong>
             <p>
-              {order.shippingAddress.fullName} · {new Date(order.createdAt).toLocaleDateString()}
+              {order.user?.name || order.shippingAddress.fullName} ·{' '}
+              {order.user?.email || 'Customer account unavailable'} ·{' '}
+              {new Date(order.createdAt).toLocaleDateString()}
             </p>
           </div>
           <strong>{formatCurrency(order.totalAmount)}</strong>
@@ -60,6 +72,19 @@ export default function AdminOrdersPage() {
           </label>
         </article>
       ))}
+      {result?.pagination.totalPages > 1 && (
+        <div className="pagination">
+          <button disabled={page <= 1} onClick={() => setPage(page - 1)}>
+            Previous
+          </button>
+          <span>
+            Page {page} of {result.pagination.totalPages}
+          </span>
+          <button disabled={page >= result.pagination.totalPages} onClick={() => setPage(page + 1)}>
+            Next
+          </button>
+        </div>
+      )}
     </main>
   );
 }

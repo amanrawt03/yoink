@@ -9,6 +9,10 @@ import CheckoutPage from './pages/CheckoutPage.jsx';
 import OrdersPage from './pages/OrdersPage.jsx';
 import OrderDetailsPage from './pages/OrderDetailsPage.jsx';
 import AdminOrdersPage from './pages/AdminOrdersPage.jsx';
+import AdminLayout from './pages/AdminLayout.jsx';
+import AdminDashboardPage from './pages/AdminDashboardPage.jsx';
+import AdminProductsPage from './pages/AdminProductsPage.jsx';
+import AdminUsersPage from './pages/AdminUsersPage.jsx';
 import { useCart } from './context/CartContext.jsx';
 import './styles.css';
 
@@ -31,7 +35,7 @@ function Layout() {
         <nav>
           {user && <Link to="/cart">Cart ({cartCount})</Link>}
           {user && <Link to="/orders">Orders</Link>}
-          {user?.role === 'admin' && <Link to="/admin">Manage orders</Link>}
+          {user?.role === 'admin' && <Link to="/admin">Admin</Link>}
           {user ? (
             <>
               <span>{user.name}</span>
@@ -73,7 +77,12 @@ export default function App() {
           />
         </Route>
         <Route element={<AdminRoute />}>
-          <Route path="/admin" element={<AdminOrdersPage />} />
+          <Route path="/admin" element={<AdminLayout />}>
+            <Route index element={<AdminDashboardPage />} />
+            <Route path="products" element={<AdminProductsPage />} />
+            <Route path="orders" element={<AdminOrdersPage />} />
+            <Route path="users" element={<AdminUsersPage />} />
+          </Route>
         </Route>
         <Route
           path="*"

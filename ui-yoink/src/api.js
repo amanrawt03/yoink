@@ -52,10 +52,34 @@ export const orderApi = {
   async getOrder(id) {
     return (await api.get(`/api/orders/${encodeURIComponent(id)}`)).data.order;
   },
-  async allOrders() {
-    return (await api.get('/api/orders')).data.orders;
+  async allOrders(params) {
+    return (await api.get('/api/orders', { params })).data;
   },
   async updateStatus(id, status) {
     return (await api.patch(`/api/orders/${encodeURIComponent(id)}/status`, { status })).data.order;
+  },
+};
+
+export const adminApi = {
+  async stats() {
+    return (await api.get('/api/admin/dashboard/stats')).data.stats;
+  },
+  async products(params) {
+    return (await api.get('/api/admin/products', { params })).data;
+  },
+  async users(params) {
+    return (await api.get('/api/admin/users', { params })).data;
+  },
+  async categories() {
+    return (await api.get('/api/admin/categories')).data.categories;
+  },
+  async createProduct(product) {
+    return (await api.post('/api/products', product)).data.product;
+  },
+  async updateProduct(id, product) {
+    return (await api.patch(`/api/products/${encodeURIComponent(id)}`, product)).data.product;
+  },
+  async deactivateProduct(id) {
+    return (await api.delete(`/api/products/${encodeURIComponent(id)}`)).data;
   },
 };
