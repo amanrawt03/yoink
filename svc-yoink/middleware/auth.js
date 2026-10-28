@@ -9,7 +9,9 @@ export async function protect(req, res, next) {
 
   try {
     const payload = jwt.verify(token, process.env.JWT_SECRET);
-    const user = await User.findById(payload.sub).select('_id name email role');
+    const user = await User.findById(payload.sub).select(
+      '_id name email role savedAddresses defaultAddressId',
+    );
     if (!user) return res.status(401).json({ message: 'Authentication required.' });
     req.user = user;
     return next();
