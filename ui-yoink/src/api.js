@@ -35,3 +35,27 @@ export const cartApi = {
     return (await api.delete(`/api/cart/items/${encodeURIComponent(productId)}`)).data.cart;
   },
 };
+
+export const orderApi = {
+  async createOrder(shippingAddress, idempotencyKey) {
+    return (
+      await api.post(
+        '/api/orders',
+        { shippingAddress },
+        { headers: { 'Idempotency-Key': idempotencyKey } },
+      )
+    ).data.order;
+  },
+  async myOrders() {
+    return (await api.get('/api/orders/my-orders')).data.orders;
+  },
+  async getOrder(id) {
+    return (await api.get(`/api/orders/${encodeURIComponent(id)}`)).data.order;
+  },
+  async allOrders() {
+    return (await api.get('/api/orders')).data.orders;
+  },
+  async updateStatus(id, status) {
+    return (await api.patch(`/api/orders/${encodeURIComponent(id)}/status`, { status })).data.order;
+  },
+};

@@ -49,10 +49,12 @@ const orderSchema = new mongoose.Schema(
       default: 'pending',
       required: true,
     },
+    idempotencyKey: { type: String, trim: true, select: false },
   },
   { timestamps: true },
 );
 
 orderSchema.index({ user: 1, createdAt: -1 });
+orderSchema.index({ user: 1, idempotencyKey: 1 }, { unique: true, sparse: true });
 
 export default mongoose.model('Order', orderSchema);
