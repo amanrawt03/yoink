@@ -7,9 +7,12 @@ import {
   updateProduct,
 } from '../controllers/catalogController.js';
 import { authorize, protect } from '../middleware/auth.js';
+import { createReview, listReviews } from '../controllers/reviewController.js';
 
 const router = Router();
 router.get('/', listProducts);
+router.get('/:idOrSlug/reviews', listReviews);
+router.post('/:idOrSlug/reviews', protect, createReview);
 router.get('/:idOrSlug', getProduct);
 router.post('/', protect, authorize('admin'), createProduct);
 router.patch('/:id', protect, authorize('admin'), updateProduct);
