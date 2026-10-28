@@ -5,6 +5,10 @@ import { useAuth } from './context/AuthContext.jsx';
 import ProductListPage from './pages/ProductListPage.jsx';
 import ProductDetailsPage from './pages/ProductDetailsPage.jsx';
 import CartPage from './pages/CartPage.jsx';
+import CheckoutPage from './pages/CheckoutPage.jsx';
+import OrdersPage from './pages/OrdersPage.jsx';
+import OrderDetailsPage from './pages/OrderDetailsPage.jsx';
+import AdminOrdersPage from './pages/AdminOrdersPage.jsx';
 import { useCart } from './context/CartContext.jsx';
 import './styles.css';
 
@@ -26,6 +30,8 @@ function Layout() {
         <Link to="/">Yoink</Link>
         <nav>
           {user && <Link to="/cart">Cart ({cartCount})</Link>}
+          {user && <Link to="/orders">Orders</Link>}
+          {user?.role === 'admin' && <Link to="/admin">Manage orders</Link>}
           {user ? (
             <>
               <span>{user.name}</span>
@@ -54,16 +60,9 @@ export default function App() {
         <Route path="/register" element={<AuthPage mode="register" />} />
         <Route element={<ProtectedRoute />}>
           <Route path="/cart" element={<CartPage />} />
-          <Route
-            path="/checkout"
-            element={
-              <main>
-                <h1>Checkout</h1>
-                <p>Checkout is coming in the next module.</p>
-                <Link to="/cart">Return to cart</Link>
-              </main>
-            }
-          />
+          <Route path="/checkout" element={<CheckoutPage />} />
+          <Route path="/orders" element={<OrdersPage />} />
+          <Route path="/orders/:id" element={<OrderDetailsPage />} />
           <Route
             path="/account"
             element={
@@ -74,14 +73,7 @@ export default function App() {
           />
         </Route>
         <Route element={<AdminRoute />}>
-          <Route
-            path="/admin"
-            element={
-              <main>
-                <h1>Admin access</h1>
-              </main>
-            }
-          />
+          <Route path="/admin" element={<AdminOrdersPage />} />
         </Route>
         <Route
           path="*"
