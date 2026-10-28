@@ -7,6 +7,7 @@ import productRoutes from './routes/products.js';
 import categoryRoutes from './routes/categories.js';
 import cartRoutes from './routes/cart.js';
 import orderRoutes from './routes/orders.js';
+import adminRoutes from './routes/admin.js';
 
 dotenv.config();
 
@@ -23,6 +24,7 @@ app.use('/api/products', productRoutes);
 app.use('/api/categories', categoryRoutes);
 app.use('/api/cart', cartRoutes);
 app.use('/api/orders', orderRoutes);
+app.use('/api/admin', adminRoutes);
 
 app.get('/', (_req, res) => {
   res.send('Yoink API running');
