@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 import { catalogApi } from '../api.js';
 import { getApiErrorMessage } from '../utils/catalog.js';
 
@@ -7,11 +7,27 @@ export default function useProductDetails(idOrSlug) {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
 
-  useEffect(() => {
-    let active = true;
+  const refresh = useCallback(async () => {
     setLoading(true);
     setError('');
-    setProduct(null);
+    try {
+      const { product: value } = await catalogApi.getProduct(idOrSlug);
+      setProduct(value);
+    } catch (requestError) {
+      setError(
+        getApiErrorMessage(
+          requestError,
+          'Product details could not be loaded.',
+          'This product is no longer available.',
+        ),
+      );
+    } finally {
+      setLoading(false);
+    }
+  }, [idOrSlug]);
+
+  useEffect(() => {
+    let active = true;
     catalogApi
       .getProduct(idOrSlug)
       .then(({ product: value }) => {
@@ -35,5 +51,5 @@ export default function useProductDetails(idOrSlug) {
     };
   }, [idOrSlug]);
 
-  return { product, loading, error };
+  return { product, loading, error, refresh };
 }

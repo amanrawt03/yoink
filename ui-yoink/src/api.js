@@ -15,6 +15,19 @@ export const catalogApi = {
   async getProduct(idOrSlug) {
     return (await api.get(`/api/products/${encodeURIComponent(idOrSlug)}`)).data;
   },
+  async getReviews(idOrSlug) {
+    return (await api.get(`/api/products/${encodeURIComponent(idOrSlug)}/reviews`)).data.reviews;
+  },
+  async createReview(idOrSlug, review) {
+    return (await api.post(`/api/products/${encodeURIComponent(idOrSlug)}/reviews`, review)).data
+      .review;
+  },
+  async updateReview(reviewId, review) {
+    return (await api.patch(`/api/reviews/${encodeURIComponent(reviewId)}`, review)).data.review;
+  },
+  async deleteReview(reviewId) {
+    return (await api.delete(`/api/reviews/${encodeURIComponent(reviewId)}`)).data;
+  },
   async listCategories() {
     return (await api.get('/api/categories')).data;
   },
