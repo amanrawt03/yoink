@@ -5,6 +5,21 @@ import { useAuth } from '../context/AuthContext.jsx';
 import { accountApi, orderApi } from '../api.js';
 import { formatCurrency } from '../utils/catalog.js';
 
+function loadRazorpayCheckout() {
+  if (window.Razorpay) return Promise.resolve(true);
+  return new Promise((resolve) => {
+    const script = document.createElement('script');
+    script.src = 'https://checkout.razorpay.com/v1/checkout.js';
+    script.async = true;
+    script.onload = () => resolve(Boolean(window.Razorpay));
+    script.onerror = () => {
+      script.remove();
+      resolve(false);
+    };
+    document.body.appendChild(script);
+  });
+}
+
 const emptyAddress = (name = '') => ({
   label: 'Home',
   fullName: name,
@@ -30,6 +45,8 @@ export default function CheckoutPage() {
   const [address, setAddress] = useState(() => emptyAddress(user?.name));
   const [saveAddress, setSaveAddress] = useState(true);
   const [busy, setBusy] = useState(false);
+  const [paymentMethod, setPaymentMethod] = useState('cod');
+  const [paymentNotice, setPaymentNotice] = useState('');
   const [addressBusy, setAddressBusy] = useState(false);
   const [error, setError] = useState('');
   const [addressError, setAddressError] = useState('');
@@ -111,8 +128,10 @@ export default function CheckoutPage() {
   const submit = async (event) => {
     event.preventDefault();
     setError('');
+    setPaymentNotice('');
     setAddressError('');
     setBusy(true);
+    let paymentWindowOpened = false;
     try {
       let shippingAddress = activeSavedAddress;
       if (useNewAddress) {
@@ -126,14 +145,67 @@ export default function CheckoutPage() {
           setSaveAddress(false);
         }
       }
-      const order = await orderApi.createOrder(shippingAddress, idempotencyKey.current);
-      await refreshCart();
-      navigate(`/orders/${order._id}`, { replace: true });
+      if (paymentMethod === 'cod') {
+        const order = await orderApi.createOrder(shippingAddress, idempotencyKey.current);
+        await refreshCart();
+        navigate(`/orders/${order._id}`, { replace: true });
+        return;
+      }
+
+      const paymentOrder = await orderApi.createRazorpayOrder(
+        shippingAddress,
+        idempotencyKey.current,
+      );
+      if (!(await loadRazorpayCheckout()))
+        throw new Error('Could not load Razorpay Checkout. Please try again.');
+
+      const checkout = new window.Razorpay({
+        key: paymentOrder.keyId,
+        amount: paymentOrder.amount,
+        currency: paymentOrder.currency,
+        name: 'Yoink',
+        description: 'Order payment',
+        order_id: paymentOrder.orderId,
+        handler: async (paymentResponse) => {
+          try {
+            await orderApi.verifyRazorpayPayment({
+              ...paymentResponse,
+              applicationOrderId: paymentOrder.applicationOrderId,
+            });
+            await refreshCart();
+            setBusy(false);
+            navigate(`/orders/${paymentOrder.applicationOrderId}`, { replace: true });
+          } catch (verifyError) {
+            setBusy(false);
+            setError(
+              verifyError.response?.data?.message ||
+                'Razorpay reported success, but payment verification failed. Please contact support before retrying.',
+            );
+          }
+        },
+        modal: {
+          ondismiss: () => {
+            setBusy(false);
+            setPaymentNotice(
+              'Payment was cancelled. No payment has been confirmed; you can retry this checkout.',
+            );
+          },
+        },
+      });
+      checkout.on('payment.failed', (response) => {
+        setBusy(false);
+        setError(
+          response.error?.description ||
+            'Razorpay could not complete the payment. No payment has been confirmed.',
+        );
+      });
+      checkout.open();
+      paymentWindowOpened = true;
     } catch (err) {
       setError(err.response?.data?.message || 'Unable to place your order. Please try again.');
-      await refreshCart();
+      if (paymentMethod === 'cod') await refreshCart();
     } finally {
-      setBusy(false);
+      if (!paymentWindowOpened) setBusy(false);
     }
   };
 
@@ -145,6 +217,11 @@ export default function CheckoutPage() {
       {error && (
         <p className="notice error" role="alert">
           {error}
+        </p>
+      )}
+      {paymentNotice && (
+        <p className="notice" role="status">
+          {paymentNotice}
         </p>
       )}
       {invalidItems && (
@@ -290,13 +367,54 @@ export default function CheckoutPage() {
               {addressError}
             </p>
           )}
+          <fieldset className="checkout-payment-methods">
+            <legend>Payment method</legend>
+            <label
+              className={paymentMethod === 'cod' ? 'payment-option selected' : 'payment-option'}
+            >
+              <input
+                type="radio"
+                name="paymentMethod"
+                value="cod"
+                checked={paymentMethod === 'cod'}
+                onChange={() => setPaymentMethod('cod')}
+              />
+              <span>
+                <strong>Cash on delivery</strong>
+                <small>Pay when your order arrives.</small>
+              </span>
+            </label>
+            <label
+              className={
+                paymentMethod === 'razorpay' ? 'payment-option selected' : 'payment-option'
+              }
+            >
+              <input
+                type="radio"
+                name="paymentMethod"
+                value="razorpay"
+                checked={paymentMethod === 'razorpay'}
+                onChange={() => setPaymentMethod('razorpay')}
+              />
+              <span>
+                <strong>Pay online</strong>
+                <small>Continue securely with Razorpay.</small>
+              </span>
+            </label>
+          </fieldset>
           <button
             className="checkout-button place-order-button"
             disabled={
               busy || addressBusy || invalidItems || (!useNewAddress && !activeSavedAddress)
             }
           >
-            {busy ? 'Placing order…' : 'Place COD order'}
+            {busy
+              ? paymentMethod === 'razorpay'
+                ? 'Opening Razorpay…'
+                : 'Placing order…'
+              : paymentMethod === 'razorpay'
+                ? 'Continue to Razorpay'
+                : 'Place COD order'}
           </button>
         </form>
         <aside className="cart-summary">
@@ -313,7 +431,8 @@ export default function CheckoutPage() {
             Total <strong>{formatCurrency(cart.total)}</strong>
           </p>
           <p>
-            Payment <strong>Cash on delivery</strong>
+            Payment{' '}
+            <strong>{paymentMethod === 'razorpay' ? 'Razorpay' : 'Cash on delivery'}</strong>
           </p>
           <Link className="secondary-button edit-cart-button" to="/cart">
             Edit cart

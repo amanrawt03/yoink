@@ -54,6 +54,12 @@ export default function OrderDetailsPage() {
             Order: {titleCase(order.status)}
           </span>
         </div>
+        {order.paymentMethod === 'razorpay' && order.paymentStatus === 'pending' && (
+          <p className="notice" role="status">
+            Payment was submitted and is awaiting server verification. This order is not marked
+            paid.
+          </p>
+        )}
       </div>
 
       <div className="order-detail-layout">
@@ -88,7 +94,10 @@ export default function OrderDetailsPage() {
               </span>
             </div>
             <p>
-              Payment method <strong>Cash on delivery</strong>
+              Payment method{' '}
+              <strong>
+                {order.paymentMethod === 'razorpay' ? 'Razorpay' : 'Cash on delivery'}
+              </strong>
             </p>
             <div className="order-total-divider" />
             <p className="order-grand-total">

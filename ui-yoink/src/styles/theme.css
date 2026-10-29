@@ -1625,6 +1625,54 @@ address {
 .place-order-button {
   width: 100%;
 }
+.checkout-payment-methods {
+  display: grid;
+  gap: 10px;
+  min-width: 0;
+  margin: 0;
+  padding: 0;
+  border: 0;
+}
+.checkout-payment-methods legend {
+  margin-bottom: 12px;
+  color: var(--forest);
+  font-family: 'Inter', sans-serif;
+  font-size: 20px;
+  font-weight: 700;
+}
+.checkout-form .payment-option {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  padding: 15px;
+  color: var(--ink);
+  background: var(--page);
+  border: 1px solid var(--line);
+  border-radius: var(--radius-md);
+  cursor: pointer;
+}
+.checkout-form .payment-option.selected {
+  background: var(--white);
+  border-color: var(--forest-mid);
+  box-shadow: 0 0 0 2px var(--mint);
+}
+.checkout-form .payment-option input {
+  width: 17px;
+  min-width: 17px;
+  height: 17px;
+  min-height: 17px;
+  margin: 2px 0 0;
+  padding: 0;
+  accent-color: var(--forest);
+}
+.payment-option span {
+  display: grid;
+  gap: 4px;
+}
+.payment-option small {
+  color: var(--muted);
+  font-weight: 400;
+}
 
 .admin-page {
   padding-top: 38px;
@@ -1704,18 +1752,57 @@ address {
 .admin-section-heading .primary-link {
   border: 0;
 }
-.admin-product-form {
-  display: grid;
-  gap: 14px;
-  max-width: 720px;
-  margin: 20px 0 32px;
-  padding: 22px;
-  background: var(--white);
+.admin-product-dialog {
+  width: min(760px, calc(100vw - 32px));
+  max-width: none;
+  max-height: min(90vh, 900px);
+  padding: 0;
+  overflow: auto;
+  color: var(--ink);
+  background: transparent;
+  border: 0;
   border-radius: var(--radius-md);
   box-shadow: var(--shadow-card);
 }
+.admin-product-dialog::backdrop {
+  background: rgb(0 0 0 / 72%);
+  backdrop-filter: blur(3px);
+}
+.admin-product-form {
+  display: grid;
+  gap: 14px;
+  width: 100%;
+  margin: 0;
+  padding: 26px;
+  background: var(--white);
+  border-radius: var(--radius-md);
+}
+.admin-product-form-heading {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+}
 .admin-product-form h3 {
   margin: 0;
+}
+.admin-product-dialog-close {
+  display: grid;
+  width: 38px;
+  height: 38px;
+  flex: 0 0 auto;
+  place-items: center;
+  color: var(--muted);
+  background: transparent;
+  border: 1px solid var(--line);
+  border-radius: var(--radius-sm);
+  font-size: 24px;
+  line-height: 1;
+  cursor: pointer;
+}
+.admin-product-dialog-close:hover {
+  color: var(--ink);
+  background: var(--page);
 }
 .admin-product-form label {
   display: grid;

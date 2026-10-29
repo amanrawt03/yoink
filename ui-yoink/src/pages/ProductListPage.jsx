@@ -1,3 +1,5 @@
+import { useEffect, useState } from 'react';
+import { catalogApi } from '../api.js';
 import CatalogToolbar from '../components/catalog/CatalogToolbar.jsx';
 import ProductGrid from '../components/catalog/ProductGrid.jsx';
 import ProductPagination from '../components/catalog/ProductPagination.jsx';
@@ -6,7 +8,22 @@ import useProductCatalog from '../hooks/useProductCatalog.js';
 export default function ProductListPage() {
   const catalog = useProductCatalog();
   const { result, loading, error, page, categories, category } = catalog;
-  const heroProduct = result.products[0];
+  const [heroProduct, setHeroProduct] = useState(null);
+
+  useEffect(() => {
+    let active = true;
+    catalogApi
+      .listProducts({ featured: true, limit: 1, sortBy: 'newest' })
+      .then(({ products }) => {
+        if (active) setHeroProduct(products[0] || null);
+      })
+      .catch(() => {
+        if (active) setHeroProduct(null);
+      });
+    return () => {
+      active = false;
+    };
+  }, []);
 
   return (
     <main className="catalog-page">
@@ -15,13 +32,9 @@ export default function ProductListPage() {
           <img className="home-hero-image" src={heroProduct.images[0]} alt="" />
         )}
         <div className="home-hero-copy">
-          <p className="home-hero-kicker">THE EVERYDAY EDIT</p>
-          <h1 id="home-hero-title">
-            Good things.
-            <br />
-            Better finds.
-          </h1>
-          <p>Thoughtful essentials for the things you do every day.</p>
+          <p className="home-hero-kicker">NEW DROPS DAILY</p>
+          <h1 id="home-hero-title">Make room for more.</h1>
+          <p>Everyday essentials, priced to move fast.</p>
           <a className="home-hero-cta" href="#shop">
             Explore the collection <span aria-hidden="true">↘</span>
           </a>

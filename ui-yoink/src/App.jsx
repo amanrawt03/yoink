@@ -237,9 +237,6 @@ function Layout() {
           onClose={() => setAuthOpen(false)}
           onAuthenticated={() => {
             setAuthOpen(false);
-            requestAnimationFrame(() => {
-              if (profileMenuRef.current) profileMenuRef.current.open = true;
-            });
           }}
         />
       )}
