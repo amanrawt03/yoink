@@ -21,8 +21,8 @@ Yoink is a full-stack E-com platform for discovering products, managing a cart, 
 ## Live demo
 **https://yoink-taupe.vercel.app/**
 
-<img width="959" height="474" alt="image" src="https://github.com/user-attachments/assets/8d252566-83ce-44d8-861d-f7fab78719af" />
 <img width="959" height="475" alt="image" src="https://github.com/user-attachments/assets/36f94e6d-d6b1-4912-b642-8e1801e24ca1" />
+<img width="959" height="474" alt="image" src="https://github.com/user-attachments/assets/8d252566-83ce-44d8-861d-f7fab78719af" />
 <img width="959" height="512" alt="image" src="https://github.com/user-attachments/assets/ab03f4a1-3774-41c0-b893-e5da275354f2" />
 <img width="959" height="473" alt="image" src="https://github.com/user-attachments/assets/7e318470-f6b1-4ecf-b205-468475c68188" />
 <img width="959" height="479" alt="image" src="https://github.com/user-attachments/assets/15e984b7-7a4e-4b60-812e-a4b0b514034b" />
