@@ -80,21 +80,43 @@ export default function AdminProductsPage() {
       setBusy(false);
     }
   };
-  const deactivate = async (product) => {
-    if (
-      !window.confirm(
-        `Deactivate “${product.name}”? It will no longer appear in the public catalog.`,
-      )
-    )
-      return;
+  const refreshAfterProductChange = async () => {
+    const data = await adminApi.products({ page, limit: 12 });
+    if (data.products.length === 0 && page > 1) setPage(page - 1);
+    else setResult(data);
+  };
+  const setActive = async (product, isActive) => {
+    const action = isActive ? 'restore' : 'deactivate';
+    const prompt = isActive
+      ? `Restore “${product.name}” to the public catalog?`
+      : `Deactivate “${product.name}”? It will no longer appear in the public catalog.`;
+    if (!window.confirm(prompt)) return;
+    setBusy(true);
     setError('');
     setNotice('');
     try {
-      await adminApi.deactivateProduct(product._id);
-      setNotice('Product deactivated.');
-      await load();
+      await adminApi.updateProduct(product._id, { isActive });
+      setNotice(isActive ? 'Product restored.' : 'Product deactivated.');
+      await refreshAfterProductChange();
     } catch (err) {
-      setError(err.response?.data?.message || 'Unable to deactivate product.');
+      setError(err.response?.data?.message || `Unable to ${action} product.`);
+    } finally {
+      setBusy(false);
+    }
+  };
+  const removeProduct = async (product) => {
+    if (!window.confirm(`Permanently delete “${product.name}”? This cannot be undone.`)) return;
+    setBusy(true);
+    setError('');
+    setNotice('');
+    try {
+      await adminApi.deleteProduct(product._id);
+      setNotice('Product permanently deleted.');
+      await refreshAfterProductChange();
+    } catch (err) {
+      setError(err.response?.data?.message || 'Unable to delete product.');
+    } finally {
+      setBusy(false);
     }
   };
   return (
@@ -246,11 +268,58 @@ export default function AdminProductsPage() {
                   <td>{product.stock}</td>
                   <td>{product.isActive ? 'Active' : 'Inactive'}</td>
                   <td className="admin-actions">
-                    <button onClick={() => startEdit(product)}>Edit</button>
-                    {product.isActive && (
-                      <button className="text-button" onClick={() => deactivate(product)}>
-                        Deactivate
+                    <button
+                      className="icon-action"
+                      type="button"
+                      aria-label={`Edit ${product.name}`}
+                      title="Edit product"
+                      onClick={() => startEdit(product)}
+                    >
+                      <svg viewBox="0 0 24 24" aria-hidden="true">
+                        <path d="m14 5 5 5M4 20l4.5-1 10.8-10.8a2.1 2.1 0 0 0-3-3L5.5 16 4 20Z" />
+                      </svg>
+                    </button>
+                    {product.isActive ? (
+                      <button
+                        className="icon-action"
+                        type="button"
+                        aria-label={`Deactivate ${product.name}`}
+                        title="Deactivate product"
+                        disabled={busy}
+                        onClick={() => setActive(product, false)}
+                      >
+                        <svg viewBox="0 0 24 24" aria-hidden="true">
+                          <circle cx="12" cy="12" r="9" />
+                          <path d="M8 12h8" />
+                        </svg>
                       </button>
+                    ) : (
+                      <>
+                        <button
+                          className="icon-action"
+                          type="button"
+                          aria-label={`Restore ${product.name}`}
+                          title="Restore product"
+                          disabled={busy}
+                          onClick={() => setActive(product, true)}
+                        >
+                          <svg viewBox="0 0 24 24" aria-hidden="true">
+                            <path d="M3 11a9 9 0 1 1 2.6 6.4M3 4v7h7" />
+                          </svg>
+                        </button>
+                        <button
+                          className="icon-action danger-action"
+                          type="button"
+                          aria-label={`Permanently delete ${product.name}`}
+                          title="Permanently delete product"
+                          disabled={busy}
+                          onClick={() => removeProduct(product)}
+                        >
+                          <svg viewBox="0 0 24 24" aria-hidden="true">
+                            <path d="M3 6h18M8 6V4h8v2m3 0-1 14H6L5 6m4 4v6m6-6v6" />
+                          </svg>
+                        </button>
+                      </>
                     )}
                   </td>
                 </tr>

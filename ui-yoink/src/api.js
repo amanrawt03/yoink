@@ -107,7 +107,7 @@ export const adminApi = {
   async updateProduct(id, product) {
     return (await api.patch(`/api/products/${encodeURIComponent(id)}`, product)).data.product;
   },
-  async deactivateProduct(id) {
+  async deleteProduct(id) {
     return (await api.delete(`/api/products/${encodeURIComponent(id)}`)).data;
   },
 };

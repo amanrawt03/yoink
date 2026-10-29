@@ -5,7 +5,6 @@ export default function AdminLayout() {
     <main className="admin-page">
       <div className="admin-heading">
         <div>
-          <p className="eyebrow">YO INK / ADMIN</p>
           <h1>Admin workspace</h1>
         </div>
       </div>
