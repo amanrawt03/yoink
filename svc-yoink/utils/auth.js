@@ -5,7 +5,9 @@ export function cookieOptions() {
   return {
     httpOnly: true,
     secure,
-    sameSite: 'lax',
+    // The production frontend and API are hosted on different sites, so the
+    // browser requires SameSite=None for credentialed cross-site requests.
+    sameSite: secure ? 'none' : 'lax',
     path: '/',
     maxAge: Number(process.env.JWT_COOKIE_MAX_AGE_MS) || 7 * 24 * 60 * 60 * 1000,
   };
