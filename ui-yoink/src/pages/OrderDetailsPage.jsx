@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react';
 import { Link, useParams } from 'react-router-dom';
 import { orderApi } from '../api.js';
 import { formatCurrency } from '../utils/catalog.js';
+import { LoadingState, NotFoundState } from '../components/PageStates.jsx';
 
 const titleCase = (value) => value.charAt(0).toUpperCase() + value.slice(1);
 
@@ -24,7 +25,17 @@ export default function OrderDetailsPage() {
       );
   }, [id]);
   if (error)
-    return (
+    return error === 'Order not found.' ? (
+      <NotFoundState
+        title="Order not found"
+        description="That order may have been removed or the link may be incorrect."
+        action={
+          <Link className="primary-link" to="/orders">
+            View your orders
+          </Link>
+        }
+      />
+    ) : (
       <main className="cart-page">
         <h1>Order unavailable</h1>
         <p className="notice error" role="alert">
@@ -38,7 +49,7 @@ export default function OrderDetailsPage() {
   if (!order)
     return (
       <main className="cart-page">
-        <p role="status">Loading order...</p>
+        <LoadingState label="Loading your order…" />
       </main>
     );
 

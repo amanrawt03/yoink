@@ -3,11 +3,12 @@ import { catalogApi } from '../api.js';
 import CatalogToolbar from '../components/catalog/CatalogToolbar.jsx';
 import ProductGrid from '../components/catalog/ProductGrid.jsx';
 import ProductPagination from '../components/catalog/ProductPagination.jsx';
+import { EmptyState, LoadingState } from '../components/PageStates.jsx';
 import useProductCatalog from '../hooks/useProductCatalog.js';
 
 export default function ProductListPage() {
   const catalog = useProductCatalog();
-  const { result, loading, error, page, categories, category } = catalog;
+  const { result, loading, error, page } = catalog;
   const [heroProduct, setHeroProduct] = useState(null);
 
   useEffect(() => {
@@ -44,31 +45,6 @@ export default function ProductListPage() {
           {heroProduct && <span>Featured find · {heroProduct.name}</span>}
         </div>
       </section>
-      <section className="home-category-section" aria-label="Shop by category">
-        <div className="home-category-heading">
-          <p className="eyebrow">A LITTLE BIT OF EVERYTHING</p>
-          <h2>Find your kind of good.</h2>
-        </div>
-        <div className="home-category-list">
-          <button
-            className={!category ? 'active' : ''}
-            type="button"
-            onClick={() => catalog.changeParams({ category: '' })}
-          >
-            Everything <span>↗</span>
-          </button>
-          {categories.map((item) => (
-            <button
-              className={category === item._id ? 'active' : ''}
-              key={item._id}
-              type="button"
-              onClick={() => catalog.changeParams({ category: item._id })}
-            >
-              {item.name} <span>↗</span>
-            </button>
-          ))}
-        </div>
-      </section>
       <div className="home-shop-heading" id="shop">
         <div>
           <p className="eyebrow">GOOD FINDS, RIGHT THIS WAY</p>
@@ -87,9 +63,13 @@ export default function ProductListPage() {
         </p>
       )}
       {loading ? (
-        <p className="notice">Loading products…</p>
+        <LoadingState label="Finding good stuff…" className="page-state-compact" />
       ) : !error && result.products.length === 0 ? (
-        <p className="notice">No products found. Try another search or category.</p>
+        <EmptyState
+          title="No products found"
+          description="Try another search or choose a different category."
+          className="page-state-compact"
+        />
       ) : (
         <>
           <ProductGrid products={result.products} />

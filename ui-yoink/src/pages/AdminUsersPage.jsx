@@ -1,5 +1,7 @@
 import { useEffect, useState } from 'react';
 import { adminApi } from '../api.js';
+import { EmptyState, LoadingState } from '../components/PageStates.jsx';
+import PaginationArrow from '../components/PaginationArrow.jsx';
 
 export default function AdminUsersPage() {
   const [result, setResult] = useState(null);
@@ -20,8 +22,12 @@ export default function AdminUsersPage() {
           {error}
         </p>
       )}
-      {!result && !error && <p role="status">Loading users…</p>}
-      {result?.users.length === 0 && <p className="notice">No users found.</p>}
+      {!result && !error && (
+        <LoadingState label="Loading customers…" className="page-state-compact" />
+      )}
+      {result?.users.length === 0 && (
+        <EmptyState title="No customers yet" className="page-state-compact" />
+      )}
       {!!result?.users.length && (
         <div className="admin-table-wrap">
           <table className="admin-table">
@@ -48,14 +54,18 @@ export default function AdminUsersPage() {
       )}
       {result?.pagination.totalPages > 1 && (
         <div className="pagination">
-          <button disabled={page <= 1} onClick={() => setPage(page - 1)}>
-            Previous
+          <button aria-label="Previous page" disabled={page <= 1} onClick={() => setPage(page - 1)}>
+            <PaginationArrow direction="previous" />
           </button>
           <span>
             Page {page} of {result.pagination.totalPages}
           </span>
-          <button disabled={page >= result.pagination.totalPages} onClick={() => setPage(page + 1)}>
-            Next
+          <button
+            aria-label="Next page"
+            disabled={page >= result.pagination.totalPages}
+            onClick={() => setPage(page + 1)}
+          >
+            <PaginationArrow direction="next" />
           </button>
         </div>
       )}

@@ -14,6 +14,7 @@ import AdminLayout from './pages/AdminLayout.jsx';
 import AdminDashboardPage from './pages/AdminDashboardPage.jsx';
 import AdminProductsPage from './pages/AdminProductsPage.jsx';
 import AdminUsersPage from './pages/AdminUsersPage.jsx';
+import { NotFoundState } from './components/PageStates.jsx';
 import { useCart } from './context/CartContext.jsx';
 import YoinkLogo from './components/YoinkLogo.jsx';
 import './styles.css';
@@ -277,10 +278,13 @@ export default function App() {
         <Route
           path="*"
           element={
-            <main>
-              <h1>Page not found</h1>
-              <Link to="/">Return home</Link>
-            </main>
+            <NotFoundState
+              action={
+                <Link className="primary-link" to="/">
+                  Return home
+                </Link>
+              }
+            />
           }
         />
       </Route>

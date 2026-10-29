@@ -1,6 +1,7 @@
 import { useRef, useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useCart } from '../context/CartContext.jsx';
+import { EmptyState, LoadingState } from '../components/PageStates.jsx';
 import { useAuth } from '../context/AuthContext.jsx';
 import { accountApi, orderApi } from '../api.js';
 import { formatCurrency } from '../utils/catalog.js';
@@ -58,16 +59,21 @@ export default function CheckoutPage() {
   if (loading)
     return (
       <main className="cart-page">
-        <p role="status">Loading your cart…</p>
+        <LoadingState label="Preparing your checkout…" />
       </main>
     );
   if (!cart.items.length)
     return (
       <main className="cart-page">
-        <h1>Your cart is empty</h1>
-        <Link className="primary-link" to="/">
-          Browse products
-        </Link>
+        <EmptyState
+          title="Your cart is empty"
+          description="Add a product to your cart before checking out."
+          action={
+            <Link className="primary-link" to="/">
+              Browse products
+            </Link>
+          }
+        />
       </main>
     );
 

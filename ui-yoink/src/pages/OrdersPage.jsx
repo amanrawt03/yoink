@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { orderApi } from '../api.js';
 import { formatCurrency } from '../utils/catalog.js';
+import { EmptyState, LoadingState } from '../components/PageStates.jsx';
 
 const titleCase = (value) => value.charAt(0).toUpperCase() + value.slice(1);
 export default function OrdersPage() {
@@ -21,17 +22,23 @@ export default function OrdersPage() {
   }, []);
   return (
     <main className="cart-page">
-      <h1>Your orders</h1>
+      {orders?.length !== 0 && <h1>Your orders</h1>}
       {error && (
         <p className="notice error" role="alert">
           {error}
         </p>
       )}
-      {orders === null && !error && <p role="status">Loading orders...</p>}
+      {orders === null && !error && <LoadingState label="Loading your orders…" />}
       {orders?.length === 0 && (
-        <p>
-          You have not placed any orders yet. <Link to="/">Browse products</Link>
-        </p>
+        <EmptyState
+          title="No orders yet"
+          description="Your orders will show up here after checkout."
+          action={
+            <Link className="primary-link" to="/">
+              Browse products
+            </Link>
+          }
+        />
       )}
       {orders?.map((order) => (
         <article className="order-row customer-order-row" key={order._id}>
