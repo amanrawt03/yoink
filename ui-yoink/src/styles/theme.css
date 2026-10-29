@@ -894,7 +894,6 @@ button:disabled {
   max-width: 640px;
   min-height: min(72vh, 820px);
   flex-direction: column;
-  justify-content: center;
   gap: 28px;
   justify-self: center;
 }
