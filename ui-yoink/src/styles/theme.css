@@ -227,7 +227,9 @@ header nav button {
   font-weight: 600;
   text-align: left;
   cursor: pointer;
-  transition: background var(--ease-fast), color var(--ease-fast);
+  transition:
+    background var(--ease-fast),
+    color var(--ease-fast);
 }
 .profile-dropdown .profile-menu-link {
   display: flex;
@@ -239,7 +241,9 @@ header nav button {
   border-radius: var(--radius-sm);
   font-size: 13px;
   font-weight: 600;
-  transition: background var(--ease-fast), color var(--ease-fast);
+  transition:
+    background var(--ease-fast),
+    color var(--ease-fast);
 }
 .profile-dropdown .profile-theme-toggle:hover,
 .profile-dropdown .profile-menu-link:hover,
@@ -283,7 +287,9 @@ header nav .profile-logout {
   font-size: 13px;
   font-weight: 600;
   text-align: left;
-  transition: background var(--ease-fast), color var(--ease-fast);
+  transition:
+    background var(--ease-fast),
+    color var(--ease-fast);
 }
 .yoink-logo {
   display: inline-flex;
@@ -351,7 +357,9 @@ header nav .profile-logout {
   position: absolute;
   z-index: 1;
   inset: 0;
-  background: linear-gradient(90deg, rgb(7 10 9 / 88%) 0%, rgb(7 10 9 / 58%) 39%, rgb(7 10 9 / 12%) 100%), linear-gradient(0deg, rgb(7 10 9 / 58%), transparent 25%);
+  background:
+    linear-gradient(90deg, rgb(7 10 9 / 88%) 0%, rgb(7 10 9 / 58%) 39%, rgb(7 10 9 / 12%) 100%),
+    linear-gradient(0deg, rgb(7 10 9 / 58%), transparent 25%);
 }
 .home-hero-image {
   position: absolute;
@@ -401,7 +409,9 @@ header nav .profile-logout {
   background: #f4f1e9;
   font-size: 13px;
   font-weight: 800;
-  transition: background var(--ease-fast), transform var(--ease-fast);
+  transition:
+    background var(--ease-fast),
+    transform var(--ease-fast);
 }
 .home-hero-cta:hover {
   background: #f2a06a;
@@ -475,7 +485,10 @@ header nav .profile-logout {
   font-size: 12px;
   font-weight: 700;
   cursor: pointer;
-  transition: color var(--ease-fast), background var(--ease-fast), border-color var(--ease-fast);
+  transition:
+    color var(--ease-fast),
+    background var(--ease-fast),
+    border-color var(--ease-fast);
 }
 .home-category-list button:hover,
 .home-category-list button.active {
@@ -1768,7 +1781,31 @@ address {
 }
 .admin-actions {
   display: flex;
+  align-items: center;
   gap: 8px;
+}
+.admin-actions .icon-action {
+  display: inline-grid;
+  width: 40px;
+  height: 40px;
+  padding: 9px;
+  place-items: center;
+}
+.admin-actions .icon-action svg {
+  width: 20px;
+  height: 20px;
+  fill: none;
+  stroke: currentColor;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  stroke-width: 1.8;
+}
+.admin-actions .icon-action:disabled {
+  cursor: wait;
+  opacity: 0.55;
+}
+.admin-actions .danger-action {
+  color: #a43f35;
 }
 .notice.success {
   color: var(--forest-mid);
@@ -2160,7 +2197,12 @@ main:not([class]) {
     padding: 40px 24px 82px;
   }
   .home-hero::before {
-    background: linear-gradient(0deg, rgb(7 10 9 / 88%) 0%, rgb(7 10 9 / 34%) 60%, rgb(7 10 9 / 14%) 100%);
+    background: linear-gradient(
+      0deg,
+      rgb(7 10 9 / 88%) 0%,
+      rgb(7 10 9 / 34%) 60%,
+      rgb(7 10 9 / 14%) 100%
+    );
   }
   .home-hero-image {
     object-position: center;

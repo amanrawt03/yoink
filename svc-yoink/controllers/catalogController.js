@@ -1,6 +1,7 @@
 import mongoose from 'mongoose';
 import Category from '../models/Category.js';
 import Product from '../models/Product.js';
+import Review from '../models/Review.js';
 
 export const MAX_PAGE_SIZE = 48;
 const SORTS = { price: 'price', rating: 'ratingAvg', name: 'name', newest: 'createdAt' };
@@ -216,13 +217,10 @@ export async function deleteProduct(req, res, next) {
   try {
     if (!mongoose.isValidObjectId(req.params.id))
       return res.status(400).json({ message: 'Product ID is invalid.' });
-    const product = await Product.findByIdAndUpdate(
-      req.params.id,
-      { isActive: false },
-      { new: true },
-    );
+    const product = await Product.findByIdAndDelete(req.params.id);
     if (!product) return res.status(404).json({ message: 'Product not found.' });
-    return res.json({ message: 'Product deactivated.' });
+    await Review.deleteMany({ product: product._id });
+    return res.json({ message: 'Product deleted.' });
   } catch (error) {
     return next(error);
   }

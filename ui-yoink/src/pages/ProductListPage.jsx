@@ -16,9 +16,15 @@ export default function ProductListPage() {
         )}
         <div className="home-hero-copy">
           <p className="home-hero-kicker">THE EVERYDAY EDIT</p>
-          <h1 id="home-hero-title">Good things.<br />Better finds.</h1>
+          <h1 id="home-hero-title">
+            Good things.
+            <br />
+            Better finds.
+          </h1>
           <p>Thoughtful essentials for the things you do every day.</p>
-          <a className="home-hero-cta" href="#shop">Explore the collection <span aria-hidden="true">↘</span></a>
+          <a className="home-hero-cta" href="#shop">
+            Explore the collection <span aria-hidden="true">↘</span>
+          </a>
         </div>
         <div className="home-hero-caption">
           <span>Enjoy the everyday</span>
@@ -31,16 +37,30 @@ export default function ProductListPage() {
           <h2>Find your kind of good.</h2>
         </div>
         <div className="home-category-list">
-          <button className={!category ? 'active' : ''} type="button" onClick={() => catalog.changeParams({ category: '' })}>Everything <span>↗</span></button>
+          <button
+            className={!category ? 'active' : ''}
+            type="button"
+            onClick={() => catalog.changeParams({ category: '' })}
+          >
+            Everything <span>↗</span>
+          </button>
           {categories.map((item) => (
-            <button className={category === item._id ? 'active' : ''} key={item._id} type="button" onClick={() => catalog.changeParams({ category: item._id })}>
+            <button
+              className={category === item._id ? 'active' : ''}
+              key={item._id}
+              type="button"
+              onClick={() => catalog.changeParams({ category: item._id })}
+            >
               {item.name} <span>↗</span>
             </button>
           ))}
         </div>
       </section>
       <div className="home-shop-heading" id="shop">
-        <div><p className="eyebrow">GOOD FINDS, RIGHT THIS WAY</p><h2>Shop the collection</h2></div>
+        <div>
+          <p className="eyebrow">GOOD FINDS, RIGHT THIS WAY</p>
+          <h2>Shop the collection</h2>
+        </div>
         {!loading && <span>{result.pagination?.total || 0} finds</span>}
       </div>
       <CatalogToolbar
