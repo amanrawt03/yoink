@@ -9,22 +9,32 @@ import useProductCatalog from '../hooks/useProductCatalog.js';
 export default function ProductListPage() {
   const catalog = useProductCatalog();
   const { result, loading, error, page } = catalog;
-  const [heroProduct, setHeroProduct] = useState(null);
+  const [featuredProducts, setFeaturedProducts] = useState([]);
+  const [featuredIndex, setFeaturedIndex] = useState(0);
+  const heroProduct = featuredProducts[featuredIndex] || null;
 
   useEffect(() => {
     let active = true;
     catalogApi
-      .listProducts({ featured: true, limit: 1, sortBy: 'newest' })
+      .listProducts({ featured: true, limit: 48, sortBy: 'newest' })
       .then(({ products }) => {
-        if (active) setHeroProduct(products[0] || null);
+        if (active) setFeaturedProducts(products);
       })
       .catch(() => {
-        if (active) setHeroProduct(null);
+        if (active) setFeaturedProducts([]);
       });
     return () => {
       active = false;
     };
   }, []);
+
+  useEffect(() => {
+    if (featuredProducts.length < 2) return undefined;
+    const intervalId = window.setInterval(() => {
+      setFeaturedIndex((index) => (index + 1) % featuredProducts.length);
+    }, 12000);
+    return () => window.clearInterval(intervalId);
+  }, [featuredProducts]);
 
   return (
     <main className="catalog-page">
