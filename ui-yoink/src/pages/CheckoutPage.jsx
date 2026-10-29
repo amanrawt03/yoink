@@ -302,7 +302,7 @@ export default function CheckoutPage() {
         <aside className="cart-summary">
           <h2>Order summary</h2>
           {cart.items.map((item) => (
-            <p key={item.product?._id}>
+            <p className="cart-summary-item" key={item.product?._id}>
               <span>
                 {item.product?.name || 'Unavailable'} × {item.quantity}
               </span>

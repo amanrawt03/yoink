@@ -77,6 +77,19 @@ export async function login(req, res, next) {
   }
 }
 
+export async function checkEmail(req, res, next) {
+  try {
+    const email = typeof req.body?.email === 'string' ? req.body.email.trim().toLowerCase() : '';
+    if (!emailPattern.test(email) || email.length > 254) {
+      return res.status(400).json({ message: 'Enter a valid email address.' });
+    }
+    const exists = Boolean(await User.exists({ email }));
+    return res.json({ exists });
+  } catch (error) {
+    return next(error);
+  }
+}
+
 export function logout(_req, res) {
   clearAuthCookie(res);
   return res.json({ message: 'Logged out successfully.' });
