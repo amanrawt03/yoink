@@ -4,6 +4,7 @@ import {
   getAllOrders,
   getMyOrders,
   getOrder,
+  markOrderPaid,
   updateOrderStatus,
 } from '../controllers/orderController.js';
 import { authorize, protect } from '../middleware/auth.js';
@@ -14,5 +15,6 @@ router.post('/', createOrder);
 router.get('/my-orders', getMyOrders);
 router.get('/', authorize('admin'), getAllOrders);
 router.patch('/:id/status', authorize('admin'), updateOrderStatus);
+router.patch('/:id/payment/paid', authorize('admin'), markOrderPaid);
 router.get('/:id', getOrder);
 export default router;

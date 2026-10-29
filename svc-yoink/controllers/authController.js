@@ -3,7 +3,8 @@ import jwt from 'jsonwebtoken';
 import User from '../models/User.js';
 import { AUTH_COOKIE, clearAuthCookie, cookieOptions } from '../utils/auth.js';
 
-const publicUser = (user) => ({
+export const publicUser = (user) => ({
+  _id: user._id,
   id: user._id,
   name: user.name,
   email: user.email,
