@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { Link, Navigate, useLocation, useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext.jsx';
 import YoinkLogo from '../components/YoinkLogo.jsx';
+import { LoadingState } from '../components/PageStates.jsx';
 
 export default function AuthPage({ mode }) {
   const isRegister = mode === 'register';
@@ -15,9 +16,7 @@ export default function AuthPage({ mode }) {
   if (loading)
     return (
       <main className="auth-page">
-        <p className="notice" role="status">
-          Loading your Yoink account…
-        </p>
+        <LoadingState label="Loading your Yoink account…" />
       </main>
     );
   if (user) return <Navigate to="/" replace />;

@@ -1,6 +1,8 @@
 import { useEffect, useRef, useState } from 'react';
 import { adminApi } from '../api.js';
 import { formatCurrency } from '../utils/catalog.js';
+import { EmptyState, LoadingState } from '../components/PageStates.jsx';
+import PaginationArrow from '../components/PaginationArrow.jsx';
 
 const emptyForm = {
   name: '',
@@ -130,8 +132,16 @@ export default function AdminProductsPage() {
     <section>
       <div className="admin-section-heading">
         <h2>Products</h2>
-        <button className="primary-link" onClick={() => startEdit(null)}>
-          Add product
+        <button
+          className="primary-link admin-add-product-button"
+          aria-label="Add product"
+          title="Add product"
+          onClick={() => startEdit(null)}
+        >
+          <svg viewBox="0 0 24 24" aria-hidden="true" focusable="false">
+            <path d="M12 5v14M5 12h14" />
+          </svg>
+          <span>Add product</span>
         </button>
       </div>
       {notice && (
@@ -264,8 +274,16 @@ export default function AdminProductsPage() {
           </div>
         </form>
       </dialog>
-      {!result && !error && <p role="status">Loading products…</p>}
-      {result?.products.length === 0 && <p className="notice">No products found.</p>}
+      {!result && !error && (
+        <LoadingState label="Loading products…" className="page-state-compact" />
+      )}
+      {result?.products.length === 0 && (
+        <EmptyState
+          title="No products yet"
+          description="Add a product to start building your catalog."
+          className="page-state-compact"
+        />
+      )}
       {!!result?.products.length && (
         <div className="admin-table-wrap">
           <table className="admin-table">
@@ -353,14 +371,18 @@ export default function AdminProductsPage() {
       )}
       {result?.pagination.totalPages > 1 && (
         <div className="pagination">
-          <button disabled={page <= 1} onClick={() => setPage(page - 1)}>
-            Previous
+          <button aria-label="Previous page" disabled={page <= 1} onClick={() => setPage(page - 1)}>
+            <PaginationArrow direction="previous" />
           </button>
           <span>
             Page {page} of {result.pagination.totalPages}
           </span>
-          <button disabled={page >= result.pagination.totalPages} onClick={() => setPage(page + 1)}>
-            Next
+          <button
+            aria-label="Next page"
+            disabled={page >= result.pagination.totalPages}
+            onClick={() => setPage(page + 1)}
+          >
+            <PaginationArrow direction="next" />
           </button>
         </div>
       )}

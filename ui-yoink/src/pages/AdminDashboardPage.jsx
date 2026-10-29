@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { adminApi } from '../api.js';
+import { EmptyState, LoadingState } from '../components/PageStates.jsx';
 import { formatCurrency } from '../utils/catalog.js';
 
 export default function AdminDashboardPage() {
@@ -18,12 +19,7 @@ export default function AdminDashboardPage() {
         {error}
       </p>
     );
-  if (!stats)
-    return (
-      <p className="notice" role="status">
-        Loading dashboard…
-      </p>
-    );
+  if (!stats) return <LoadingState label="Loading your store overview…" />;
   return (
     <section aria-labelledby="overview-title">
       <h2 id="overview-title">Store overview</h2>
@@ -51,7 +47,11 @@ export default function AdminDashboardPage() {
       </div>
       <h2>Orders by status</h2>
       {stats.totalOrders === 0 ? (
-        <p className="notice">No orders have been placed yet.</p>
+        <EmptyState
+          title="No orders yet"
+          description="Orders will appear here once customers start shopping."
+          className="page-state-compact"
+        />
       ) : (
         <div className="status-grid">
           {Object.entries(stats.ordersByStatus).map(([status, count]) => (

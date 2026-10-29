@@ -2,6 +2,8 @@ import { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { orderApi } from '../api.js';
 import { formatCurrency } from '../utils/catalog.js';
+import { EmptyState, LoadingState } from '../components/PageStates.jsx';
+import PaginationArrow from '../components/PaginationArrow.jsx';
 
 const statuses = ['pending', 'processing', 'shipped', 'delivered', 'cancelled'];
 export default function AdminOrdersPage() {
@@ -55,15 +57,21 @@ export default function AdminOrdersPage() {
     }
   };
   return (
-    <main className="cart-page">
-      <h1>Manage orders</h1>
+    <section className="admin-orders">
+      <h2>Manage orders</h2>
       {error && (
         <p className="notice error" role="alert">
           {error}
         </p>
       )}
-      {!result && !error && <p role="status">Loading orders…</p>}
-      {result?.orders.length === 0 && <p>No orders yet.</p>}
+      {!result && !error && <LoadingState label="Loading orders…" className="page-state-compact" />}
+      {result?.orders.length === 0 && (
+        <EmptyState
+          title="No orders yet"
+          description="Orders will appear here when customers place them."
+          className="page-state-compact"
+        />
+      )}
       {result?.orders.map((order) => (
         <article className="order-row admin-order-row" key={order._id}>
           <div className="admin-order-summary">
@@ -109,17 +117,21 @@ export default function AdminOrdersPage() {
       ))}
       {result?.pagination.totalPages > 1 && (
         <div className="pagination">
-          <button disabled={page <= 1} onClick={() => setPage(page - 1)}>
-            Previous
+          <button aria-label="Previous page" disabled={page <= 1} onClick={() => setPage(page - 1)}>
+            <PaginationArrow direction="previous" />
           </button>
           <span>
             Page {page} of {result.pagination.totalPages}
           </span>
-          <button disabled={page >= result.pagination.totalPages} onClick={() => setPage(page + 1)}>
-            Next
+          <button
+            aria-label="Next page"
+            disabled={page >= result.pagination.totalPages}
+            onClick={() => setPage(page + 1)}
+          >
+            <PaginationArrow direction="next" />
           </button>
         </div>
       )}
-    </main>
+    </section>
   );
 }

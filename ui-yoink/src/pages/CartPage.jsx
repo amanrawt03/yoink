@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { Link } from 'react-router-dom';
 import { useCart } from '../context/CartContext.jsx';
 import { formatCurrency } from '../utils/catalog.js';
+import { EmptyState, LoadingState } from '../components/PageStates.jsx';
 
 export default function CartPage() {
   const { cart, loading, error, updateItem, removeItem } = useCart();
@@ -21,14 +22,12 @@ export default function CartPage() {
   if (loading)
     return (
       <main className="cart-page">
-        <p className="notice" role="status">
-          Loading your cart…
-        </p>
+        <LoadingState label="Loading your cart…" />
       </main>
     );
   return (
     <main className="cart-page">
-      <h1>Your cart</h1>
+      {!!cart.items.length && <h1>Your cart</h1>}
       {error && (
         <p className="notice error" role="alert">
           {error}
@@ -40,12 +39,15 @@ export default function CartPage() {
         </p>
       )}
       {!cart.items.length ? (
-        <section className="cart-empty">
-          <p>Your cart is empty.</p>
-          <Link className="primary-link" to="/">
-            Browse products
-          </Link>
-        </section>
+        <EmptyState
+          title="Your cart is empty"
+          description="Find something useful, fun, or a little bit of both."
+          action={
+            <Link className="primary-link" to="/">
+              Browse products
+            </Link>
+          }
+        />
       ) : (
         <>
           <div className="cart-layout">

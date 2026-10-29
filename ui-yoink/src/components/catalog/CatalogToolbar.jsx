@@ -24,7 +24,12 @@ export default function CatalogToolbar({
           onChange={(event) => setSearch(event.target.value)}
           placeholder="Search products"
         />
-        <button type="submit">Search</button>
+        <button type="submit" aria-label="Search products">
+          <svg viewBox="0 0 24 24" aria-hidden="true" focusable="false">
+            <circle cx="10.8" cy="10.8" r="6.3" />
+            <path d="m15.4 15.4 4.2 4.2" />
+          </svg>
+        </button>
       </form>
       <select
         aria-label="Filter by category"
