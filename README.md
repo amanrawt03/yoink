@@ -1,6 +1,6 @@
 # Yoink
 
-Yoink is a full-stack storefront for discovering products, managing a cart, and placing orders. Customers can search and filter a paginated catalog, save delivery addresses, and review products. Admins have a separate area for catalog, customer, and order oversight.
+Yoink is a full-stack E-com platform for discovering products, managing a cart, and placing orders. Customers can search and filter a paginated catalog, save delivery addresses, and review products. Admins have a separate area for catalog, customer, and order oversight.
 
 ## Contents
 
@@ -17,25 +17,9 @@ Yoink is a full-stack storefront for discovering products, managing a cart, and 
 - [Testing](#testing)
 - [Deployment](#deployment)
 - [Security and engineering notes](#security-and-engineering-notes)
-- [Project links](#project-links)
 
 ## Live demo
-**[https://yoink-taupe.vercel.app/]**
-
-## Screenshots
-
-Add screenshots to `docs/screenshots/` and replace the placeholders below:
-
-| View | Suggested screenshot |
-| --- | --- |
-| Storefront | Product catalog showing search, category filters, and sorting |
-| Product detail | Product gallery, stock/price, and review section |
-| Cart and checkout | Cart summary and delivery/payment choices (use fictional address data) |
-| Orders | Customer order history and order detail/status |
-| Admin | Dashboard plus product or order management |
-
-<!-- Replace these examples with real paths after adding screenshots. -->
-<!-- ![Yoink storefront](docs/screenshots/storefront.png) -->
+**https://yoink-taupe.vercel.app/**
 
 ## Features
 
@@ -271,8 +255,3 @@ For a deployment, configure the backend's `MONGO_URI`, `JWT_SECRET`, and `CLIENT
 - The backend enforces authentication and admin authorization independently of frontend route guards.
 - Product prices and order totals come from database records, and cart quantities/available stock are checked server-side.
 - COD stock changes and order/cart updates are transactional. Razorpay currently lacks equivalent stock reservation/decrement and webhook/refund handling; see [Payments](#payments).
-
-## Project links
-
-- Repository: **[https://github.com/amanrawt03/yoink]**
-
