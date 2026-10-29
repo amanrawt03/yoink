@@ -11,6 +11,7 @@
     "format:check": "npx --yes prettier@3.6.2 --check \"src/**/*.{js,jsx,json,css}\" \"*.{js,jsx,json,html}\""
   },
   "dependencies": {
+    "@tanstack/react-query": "^5.105.0",
     "axios": "^1.11.0",
     "react": "^18.3.1",
     "react-dom": "^18.3.1",
