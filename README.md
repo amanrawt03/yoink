@@ -25,11 +25,20 @@ Yoink is a full-stack E-com platform for discovering products, managing a cart, 
 
 ### Customer
 
-- Browse active products; search names/descriptions, filter by category, price range, or featured status, sort by price/rating/name/date, and paginate.
-- View product details, manage a signed-in cart, and checkout with saved or new shipping addresses.
-- View personal orders and order details; write, edit, and delete a review per product.
+- Browse active products with search (name/description), category, price range, and featured filters, plus sorting by price, rating, name, or date, and pagination.
+- View product details and manage your cart.
+- Check out using saved or new shipping addresses.
+- Pay via multiple methods: Cash on Delivery (COD) or online payment.
+- View your orders and order details to track their status.
+- Write, edit, and delete a review for each product.
 - Switch between light and dark themes.
+- Enjoy a fully responsive design that works seamlessly across all devices and screen sizes.
 
+### Admin
+
+- View dashboard totals along with paginated product and user lists.
+- Create, edit, and delete products, and review categories, users, and orders.
+- Update order status and mark eligible orders as paid.
 ### Admin
 
 - View dashboard totals and paginated product and user lists.
