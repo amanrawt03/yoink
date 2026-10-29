@@ -1,5 +1,6 @@
-import { Link, Outlet, Route, Routes, useNavigate } from 'react-router-dom';
-import AuthPage from './pages/AuthPage.jsx';
+import { Link, Navigate, Outlet, Route, Routes, useLocation, useNavigate } from 'react-router-dom';
+import { useEffect, useRef, useState } from 'react';
+import AuthModal from './components/AuthModal.jsx';
 import { AdminRoute, ProtectedRoute } from './components/RouteGuards.jsx';
 import { useAuth } from './context/AuthContext.jsx';
 import ProductListPage from './pages/ProductListPage.jsx';
@@ -43,18 +44,6 @@ function NavIcon({ name }) {
         <path d="M4 21a8 8 0 0 1 16 0" />
       </>
     ),
-    login: (
-      <>
-        <circle cx="12" cy="8" r="4" />
-        <path d="M4 21a8 8 0 0 1 16 0M19 8h5m-2.5-2.5v5" />
-      </>
-    ),
-    register: (
-      <>
-        <circle cx="12" cy="8" r="4" />
-        <path d="M4 21a8 8 0 0 1 16 0M19 8h5m-2.5-2.5v5" />
-      </>
-    ),
     admin: (
       <>
         <path d="M12 22s8-4 8-11V5l-8-3-8 3v6c0 7 8 11 8 11Z" />
@@ -79,8 +68,45 @@ function NavIcon({ name }) {
   );
 }
 
+function ThemeMenuItem({ theme, onToggle }) {
+  return (
+    <button
+      className="profile-theme-toggle"
+      type="button"
+      aria-label={`Switch to ${theme === 'dark' ? 'light' : 'dark'} mode`}
+      aria-pressed={theme === 'dark'}
+      title={`${theme === 'dark' ? 'Dark' : 'Light'} mode`}
+      onClick={onToggle}
+    >
+      <span>Theme</span>
+      <span className="profile-theme-icon" aria-hidden="true">
+        {theme === 'dark' ? (
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
+            <path d="M20.2 15.3A8.5 8.5 0 0 1 8.7 3.8 8.5 8.5 0 1 0 20.2 15.3Z" />
+          </svg>
+        ) : (
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
+            <circle cx="12" cy="12" r="4" />
+            <path d="M12 2v2m0 16v2M4.93 4.93l1.42 1.42m11.3 11.3 1.42 1.42M2 12h2m16 0h2M4.93 19.07l1.42-1.42m11.3-11.3 1.42-1.42" />
+          </svg>
+        )}
+      </span>
+    </button>
+  );
+}
+
 function Layout() {
+  const [authOpen, setAuthOpen] = useState(false);
+  const profileMenuRef = useRef(null);
+  const [theme, setTheme] = useState(() => {
+    try {
+      return localStorage.getItem('yoink-theme') === 'light' ? 'light' : 'dark';
+    } catch {
+      return 'dark';
+    }
+  });
   const { user, logout } = useAuth();
+  const location = useLocation();
   const { cart } = useCart();
   const cartCount = cart.items.reduce((total, item) => total + item.quantity, 0);
   const navigate = useNavigate();
@@ -88,12 +114,46 @@ function Layout() {
     try {
       await logout();
     } finally {
-      navigate('/login');
+      navigate('/');
     }
   };
+  useEffect(() => {
+    document.documentElement.dataset.theme = theme;
+    document.documentElement.style.colorScheme = theme;
+    try {
+      localStorage.setItem('yoink-theme', theme);
+    } catch {
+      // The selected theme still applies for this session if storage is unavailable.
+    }
+  }, [theme]);
+  useEffect(() => {
+    if (location.state?.openAuth) {
+      setAuthOpen(true);
+      navigate('/', { replace: true, state: null });
+    }
+  }, [location.state, navigate]);
+  useEffect(() => {
+    const closeProfileMenu = () => {
+      if (profileMenuRef.current) profileMenuRef.current.open = false;
+    };
+    const onPointerDown = (event) => {
+      if (profileMenuRef.current?.open && !profileMenuRef.current.contains(event.target)) {
+        closeProfileMenu();
+      }
+    };
+    const onKeyDown = (event) => {
+      if (event.key === 'Escape') closeProfileMenu();
+    };
+    document.addEventListener('pointerdown', onPointerDown);
+    document.addEventListener('keydown', onKeyDown);
+    return () => {
+      document.removeEventListener('pointerdown', onPointerDown);
+      document.removeEventListener('keydown', onKeyDown);
+    };
+  }, []);
   return (
     <>
-      <header>
+      <header className={location.pathname === '/' ? 'site-header home-site-header' : 'site-header'}>
         <Link to="/" aria-label="Yoink home">
           <YoinkLogo />
         </Link>
@@ -109,12 +169,6 @@ function Layout() {
               <span className="cart-count">{cartCount}</span>
             </Link>
           )}
-          {user && (
-            <Link className="nav-link" to="/orders">
-              <NavIcon name="orders" />
-              <span className="nav-label">Orders</span>
-            </Link>
-          )}
           {user?.role === 'admin' && (
             <Link className="nav-link" to="/admin">
               <NavIcon name="admin" />
@@ -122,7 +176,7 @@ function Layout() {
             </Link>
           )}
           {user ? (
-            <details className="profile-menu">
+            <details className="profile-menu" ref={profileMenuRef}>
               <summary aria-label={`Profile menu for ${user.name}`}>
                 <NavIcon name="profile" />
                 <span className="profile-name">{user.name}</span>
@@ -130,26 +184,49 @@ function Layout() {
               </summary>
               <div className="profile-dropdown">
                 <p className="profile-welcome">Welcome, {user.name.trim().split(/\s+/)[0]}</p>
+                <Link
+                  className="profile-menu-link"
+                  to="/orders"
+                  onClick={() => {
+                    if (profileMenuRef.current) profileMenuRef.current.open = false;
+                  }}
+                >
+                  <span>Track your orders</span>
+                </Link>
+                <ThemeMenuItem
+                  theme={theme}
+                  onToggle={() => setTheme((current) => (current === 'dark' ? 'light' : 'dark'))}
+                />
                 <button className="profile-logout" onClick={signOut}>
                   Log out
                 </button>
               </div>
             </details>
           ) : (
-            <>
-              <Link className="nav-link" to="/login">
-                <NavIcon name="profile" />
-                <span className="nav-label">Log in</span>
-              </Link>
-              <Link className="nav-link" to="/register">
-                <NavIcon name="register" />
-                <span className="nav-label">Register</span>
-              </Link>
-            </>
+            <button
+              className="nav-link profile-trigger"
+              type="button"
+              onClick={() => setAuthOpen(true)}
+              aria-label="Sign in or create an account"
+            >
+              <NavIcon name="profile" />
+              <span className="nav-label">Sign in</span>
+            </button>
           )}
         </nav>
       </header>
       <Outlet />
+      {authOpen && (
+        <AuthModal
+          onClose={() => setAuthOpen(false)}
+          onAuthenticated={() => {
+            setAuthOpen(false);
+            requestAnimationFrame(() => {
+              if (profileMenuRef.current) profileMenuRef.current.open = true;
+            });
+          }}
+        />
+      )}
     </>
   );
 }
@@ -159,9 +236,9 @@ export default function App() {
     <Routes>
       <Route element={<Layout />}>
         <Route path="/" element={<ProductListPage />} />
+        <Route path="/login" element={<Navigate to="/" replace state={{ openAuth: true }} />} />
+        <Route path="/register" element={<Navigate to="/" replace state={{ openAuth: true }} />} />
         <Route path="/products/:idOrSlug" element={<ProductDetailsPage />} />
-        <Route path="/login" element={<AuthPage mode="login" />} />
-        <Route path="/register" element={<AuthPage mode="register" />} />
         <Route element={<ProtectedRoute />}>
           <Route path="/cart" element={<CartPage />} />
           <Route path="/checkout" element={<CheckoutPage />} />
