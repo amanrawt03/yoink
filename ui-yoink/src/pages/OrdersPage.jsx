@@ -3,6 +3,7 @@ import { Link } from 'react-router-dom';
 import { orderApi } from '../api.js';
 import { formatCurrency } from '../utils/catalog.js';
 
+const titleCase = (value) => value.charAt(0).toUpperCase() + value.slice(1);
 export default function OrdersPage() {
   const [orders, setOrders] = useState(null);
   const [error, setError] = useState('');
@@ -26,27 +27,39 @@ export default function OrdersPage() {
           {error}
         </p>
       )}
-      {orders === null && !error && <p role="status">Loading orders…</p>}
+      {orders === null && !error && <p role="status">Loading orders...</p>}
       {orders?.length === 0 && (
         <p>
           You have not placed any orders yet. <Link to="/">Browse products</Link>
         </p>
       )}
       {orders?.map((order) => (
-        <article className="order-row" key={order._id}>
-          <div>
-            <strong>Order {order._id}</strong>
+        <article className="order-row customer-order-row" key={order._id}>
+          <div className="customer-order-info">
+            <span className="customer-order-kicker">Order</span>
+            <strong>
+              <Link to={`/orders/${order._id}`}>#{order._id.slice(-8).toUpperCase()}</Link>
+            </strong>
             <p>
-              {new Date(order.createdAt).toLocaleDateString()} · {order.items.length} item(s)
+              {new Date(order.createdAt).toLocaleDateString()} <span aria-hidden="true">·</span>{' '}
+              {order.items.length} {order.items.length === 1 ? 'item' : 'items'}
             </p>
           </div>
-          <div>
-            <p>
-              {order.status} · payment {order.paymentStatus}
-            </p>
-            <strong>{formatCurrency(order.totalAmount)}</strong>
+          <div className="customer-order-summary">
+            <div className="customer-order-badges">
+              <span className={`order-status-badge order-status-${order.status}`}>
+                Order: {titleCase(order.status)}
+              </span>
+              <span className={`payment-state payment-state-${order.paymentStatus}`}>
+                Payment: {titleCase(order.paymentStatus)}
+              </span>
+            </div>
+            <strong className="customer-order-total">
+              <span>Total</span>
+              {formatCurrency(order.totalAmount)}
+            </strong>
           </div>
-          <Link className="primary-link" to={`/orders/${order._id}`}>
+          <Link className="primary-link customer-order-link" to={`/orders/${order._id}`}>
             View order
           </Link>
         </article>

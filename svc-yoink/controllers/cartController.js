@@ -17,7 +17,9 @@ export function responseCart(cart) {
           }
         : null,
       quantity,
-      lineSubtotal: product ? product.price * quantity : 0,
+      // Deleted products remain visible so the customer can remove them, but they
+      // no longer have a price to include in the cart total.
+      lineSubtotal: Number.isFinite(product?.price) ? product.price * quantity : 0,
       available,
     };
   });

@@ -215,3 +215,31 @@ export async function updateOrderStatus(req, res, next) {
     return next(error);
   }
 }
+
+export async function markOrderPaid(req, res, next) {
+  try {
+    if (!mongoose.isObjectIdOrHexString(req.params.id))
+      return res.status(400).json({ message: 'Order ID is invalid.' });
+
+    const current = await Order.findById(req.params.id);
+    if (!current) return res.status(404).json({ message: 'Order not found.' });
+    if (current.paymentStatus === 'paid') return res.json({ order: current });
+    if (current.status === 'cancelled' || current.paymentStatus !== 'pending')
+      return res.status(409).json({ message: 'This order cannot be marked as paid.' });
+
+    const order = await Order.findOneAndUpdate(
+      { _id: req.params.id, status: { $ne: 'cancelled' }, paymentStatus: 'pending' },
+      { $set: { paymentStatus: 'paid' } },
+      { new: true, runValidators: true },
+    );
+    if (order) return res.json({ order });
+
+    // A concurrent admin action may have updated payment after the first read.
+    const latest = await Order.findById(req.params.id);
+    if (!latest) return res.status(404).json({ message: 'Order not found.' });
+    if (latest.paymentStatus === 'paid') return res.json({ order: latest });
+    return res.status(409).json({ message: 'This order cannot be marked as paid.' });
+  } catch (error) {
+    return next(error);
+  }
+}

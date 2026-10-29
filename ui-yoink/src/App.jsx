@@ -19,6 +19,11 @@ import './styles.css';
 
 function NavIcon({ name }) {
   const paths = {
+    home: (
+      <>
+        <path d="m3 10 9-7 9 7v10a1 1 0 0 1-1 1h-5v-6h-6v6H4a1 1 0 0 1-1-1Z" />
+      </>
+    ),
     cart: (
       <>
         <path d="M2 3h2l2.2 11.2a2 2 0 0 0 2 1.6h8.9a2 2 0 0 0 1.9-1.4L21 8H5" />
@@ -93,6 +98,10 @@ function Layout() {
           <YoinkLogo />
         </Link>
         <nav>
+          <Link className="nav-link" to="/" aria-label="Home">
+            <NavIcon name="home" />
+            <span className="nav-label home-nav-label">Home</span>
+          </Link>
           {user && (
             <Link className="nav-link" to="/cart" aria-label={`Cart, ${cartCount} items`}>
               <NavIcon name="cart" />

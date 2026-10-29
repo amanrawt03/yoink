@@ -8,6 +8,7 @@ export default function AdminOrdersPage() {
   const [result, setResult] = useState(null);
   const [page, setPage] = useState(1);
   const [error, setError] = useState('');
+  const [paymentBusy, setPaymentBusy] = useState('');
   useEffect(() => {
     setResult(null);
     orderApi
@@ -36,6 +37,23 @@ export default function AdminOrdersPage() {
       setError(err.response?.data?.message || 'Unable to update order.');
     }
   };
+  const markPaid = async (id) => {
+    setPaymentBusy(id);
+    setError('');
+    try {
+      const updated = await orderApi.markPaid(id);
+      setResult((currentResult) => ({
+        ...currentResult,
+        orders: currentResult.orders.map((order) =>
+          order._id === id ? { ...updated, user: order.user } : order,
+        ),
+      }));
+    } catch (err) {
+      setError(err.response?.data?.message || 'Unable to update payment status.');
+    } finally {
+      setPaymentBusy('');
+    }
+  };
   return (
     <main className="cart-page">
       <h1>Manage orders</h1>
@@ -47,19 +65,21 @@ export default function AdminOrdersPage() {
       {!result && !error && <p role="status">Loading orders…</p>}
       {result?.orders.length === 0 && <p>No orders yet.</p>}
       {result?.orders.map((order) => (
-        <article className="order-row" key={order._id}>
-          <div>
-            <strong>
-              <Link to={`/orders/${order._id}`}>{order._id}</Link>
-            </strong>
-            <p>
-              {order.user?.name || order.shippingAddress.fullName} ·{' '}
-              {order.user?.email || 'Customer account unavailable'} ·{' '}
-              {new Date(order.createdAt).toLocaleDateString()}
-            </p>
+        <article className="order-row admin-order-row" key={order._id}>
+          <div className="admin-order-summary">
+            <div>
+              <strong>
+                <Link to={`/orders/${order._id}`}>{order._id}</Link>
+              </strong>
+              <p>
+                {order.user?.name || order.shippingAddress.fullName} ·{' '}
+                {order.user?.email || 'Customer account unavailable'} ·{' '}
+                {new Date(order.createdAt).toLocaleDateString()}
+              </p>
+            </div>
+            <strong className="admin-order-total">{formatCurrency(order.totalAmount)}</strong>
           </div>
-          <strong>{formatCurrency(order.totalAmount)}</strong>
-          <label>
+          <label className="admin-order-control">
             Status
             <select
               value={order.status}
@@ -70,6 +90,21 @@ export default function AdminOrdersPage() {
               ))}
             </select>
           </label>
+          <div className="order-payment admin-order-control">
+            <span className={`payment-state payment-state-${order.paymentStatus}`}>
+              {order.paymentStatus === 'paid' ? 'Paid' : `Payment ${order.paymentStatus}`}
+            </span>
+            {order.paymentStatus === 'pending' && order.status !== 'cancelled' && (
+              <button
+                className="secondary-button"
+                type="button"
+                disabled={paymentBusy === order._id}
+                onClick={() => markPaid(order._id)}
+              >
+                {paymentBusy === order._id ? 'Saving…' : 'Mark paid'}
+              </button>
+            )}
+          </div>
         </article>
       ))}
       {result?.pagination.totalPages > 1 && (

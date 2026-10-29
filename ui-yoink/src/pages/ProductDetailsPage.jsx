@@ -116,9 +116,6 @@ export default function ProductDetailsPage() {
 
   return (
     <main className="detail-page">
-      <Link className="back-link" to="/">
-        ← All products
-      </Link>
       <section className="detail-layout">
         <ProductGallery name={product.name} images={product.images} />
         <ProductInformation product={product} />

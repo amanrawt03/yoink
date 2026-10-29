@@ -315,7 +315,9 @@ export default function CheckoutPage() {
           <p>
             Payment <strong>Cash on delivery</strong>
           </p>
-          <Link to="/cart">Edit cart</Link>
+          <Link className="secondary-button edit-cart-button" to="/cart">
+            Edit cart
+          </Link>
         </aside>
       </div>
     </main>

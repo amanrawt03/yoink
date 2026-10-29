@@ -71,6 +71,9 @@ export const orderApi = {
   async updateStatus(id, status) {
     return (await api.patch(`/api/orders/${encodeURIComponent(id)}/status`, { status })).data.order;
   },
+  async markPaid(id) {
+    return (await api.patch(`/api/orders/${encodeURIComponent(id)}/payment/paid`)).data.order;
+  },
 };
 
 export const accountApi = {

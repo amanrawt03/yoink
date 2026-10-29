@@ -3,6 +3,8 @@ import { Link, useParams } from 'react-router-dom';
 import { orderApi } from '../api.js';
 import { formatCurrency } from '../utils/catalog.js';
 
+const titleCase = (value) => value.charAt(0).toUpperCase() + value.slice(1);
+
 export default function OrderDetailsPage() {
   const { id } = useParams();
   const [order, setOrder] = useState(null);
@@ -28,65 +30,94 @@ export default function OrderDetailsPage() {
         <p className="notice error" role="alert">
           {error}
         </p>
-        <Link to="/orders">Your orders</Link>
+        <Link className="secondary-button order-history-link" to="/orders">
+          View all orders
+        </Link>
       </main>
     );
   if (!order)
     return (
       <main className="cart-page">
-        <p role="status">Loading order…</p>
+        <p role="status">Loading order...</p>
       </main>
     );
+
   return (
-    <main className="cart-page">
-      <p className="eyebrow">ORDER CONFIRMATION</p>
-      <h1>Thank you for your order</h1>
-      <p>
-        Order {order._id} · {new Date(order.createdAt).toLocaleString()}
-      </p>
-      <p>
-        Status: <strong>{order.status}</strong> · Payment:{' '}
-        <strong>{order.paymentStatus} (cash on delivery)</strong>
-      </p>
-      <section className="order-items">
-        {order.items.map((item) => (
-          <article className="cart-item" key={item.product}>
-            <img src={item.image} alt="" />
-            <div className="cart-item-info">
-              <h2>{item.name}</h2>
-              <p>
-                {formatCurrency(item.price)} × {item.quantity}
-              </p>
-            </div>
-            <strong>{formatCurrency(item.price * item.quantity)}</strong>
-          </article>
-        ))}
-      </section>
-      <div className="cart-summary">
-        <p>
-          Total <strong>{formatCurrency(order.totalAmount)}</strong>
-        </p>
+    <main className="cart-page order-detail-page">
+      <div className="order-confirmation">
+        <p className="eyebrow">ORDER CONFIRMATION</p>
+        <h1>Thank you for your order</h1>
+        <div className="order-detail-meta">
+          <span>Order {order._id}</span>
+          <span>{new Date(order.createdAt).toLocaleString()}</span>
+          <span className={`order-status-badge order-status-${order.status}`}>
+            Order: {titleCase(order.status)}
+          </span>
+        </div>
       </div>
-      <h2>Shipping address</h2>
-      <address>
-        {order.shippingAddress.fullName}
-        <br />
-        {order.shippingAddress.addressLine1}
-        {order.shippingAddress.addressLine2 && (
-          <>
-            <br />
-            {order.shippingAddress.addressLine2}
-          </>
-        )}
-        <br />
-        {order.shippingAddress.city}, {order.shippingAddress.state}{' '}
-        {order.shippingAddress.postalCode}
-        <br />
-        {order.shippingAddress.country}
-      </address>
-      <p>
-        <Link to="/orders">View all orders</Link>
-      </p>
+
+      <div className="order-detail-layout">
+        <section className="order-detail-items" aria-labelledby="items-heading">
+          <h2 id="items-heading">Items in this order</h2>
+          <div className="order-detail-item-list">
+            {order.items.map((item) => (
+              <article className="order-detail-item" key={item.product}>
+                {item.image ? (
+                  <img src={item.image} alt="" />
+                ) : (
+                  <div className="cart-missing">No image</div>
+                )}
+                <div className="order-detail-item-copy">
+                  <h3>{item.name}</h3>
+                  <p>
+                    {formatCurrency(item.price)} <span aria-hidden="true">×</span> {item.quantity}
+                  </p>
+                </div>
+                <strong>{formatCurrency(item.price * item.quantity)}</strong>
+              </article>
+            ))}
+          </div>
+        </section>
+
+        <aside className="order-detail-sidebar">
+          <section className="order-total-card" aria-labelledby="order-total-heading">
+            <div className="order-total-heading">
+              <h2 id="order-total-heading">Order summary</h2>
+              <span className={`payment-state payment-state-${order.paymentStatus}`}>
+                Payment: {titleCase(order.paymentStatus)}
+              </span>
+            </div>
+            <p>
+              Payment method <strong>Cash on delivery</strong>
+            </p>
+            <div className="order-total-divider" />
+            <p className="order-grand-total">
+              Total <strong>{formatCurrency(order.totalAmount)}</strong>
+            </p>
+          </section>
+
+          <section className="shipping-address-card" aria-labelledby="shipping-heading">
+            <p className="eyebrow">DELIVERY DETAILS</p>
+            <h2 id="shipping-heading">Shipping address</h2>
+            <address>
+              <strong>{order.shippingAddress.fullName}</strong>
+              <span>{order.shippingAddress.addressLine1}</span>
+              {order.shippingAddress.addressLine2 && (
+                <span>{order.shippingAddress.addressLine2}</span>
+              )}
+              <span>
+                {order.shippingAddress.city}, {order.shippingAddress.state}{' '}
+                {order.shippingAddress.postalCode}
+              </span>
+              <span>{order.shippingAddress.country}</span>
+            </address>
+          </section>
+
+          <Link className="secondary-button order-history-link" to="/orders">
+            View all orders
+          </Link>
+        </aside>
+      </div>
     </main>
   );
 }
