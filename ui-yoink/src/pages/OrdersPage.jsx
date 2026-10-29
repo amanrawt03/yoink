@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useQuery } from '@tanstack/react-query';
 import { Link } from 'react-router-dom';
 import { orderApi } from '../api.js';
 import { formatCurrency } from '../utils/catalog.js';
@@ -6,29 +6,23 @@ import { EmptyState, LoadingState } from '../components/PageStates.jsx';
 
 const titleCase = (value) => value.charAt(0).toUpperCase() + value.slice(1);
 export default function OrdersPage() {
-  const [orders, setOrders] = useState(null);
-  const [error, setError] = useState('');
-  useEffect(() => {
-    orderApi
-      .myOrders()
-      .then(setOrders)
-      .catch((err) =>
-        setError(
-          err.response?.status === 401
-            ? 'Please log in to view your orders.'
-            : 'Unable to load orders.',
-        ),
-      );
-  }, []);
+  const { data: orders, error, isPending } = useQuery({
+    queryKey: ['orders', 'mine'],
+    queryFn: orderApi.myOrders,
+  });
+  const errorMessage =
+    error?.response?.status === 401
+      ? 'Please log in to view your orders.'
+      : 'Unable to load orders.';
   return (
     <main className="cart-page">
-      {orders?.length !== 0 && <h1>Your orders</h1>}
+      {!isPending && orders?.length !== 0 && <h1>Your orders</h1>}
       {error && (
         <p className="notice error" role="alert">
-          {error}
+          {errorMessage}
         </p>
       )}
-      {orders === null && !error && <LoadingState label="Loading your orders…" />}
+      {isPending && <LoadingState label="Loading your orders…" />}
       {orders?.length === 0 && (
         <EmptyState
           title="No orders yet"
