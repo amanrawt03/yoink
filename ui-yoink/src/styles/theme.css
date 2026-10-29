@@ -655,15 +655,20 @@ header nav .profile-logout {
   position: relative;
   min-width: 0;
   overflow: hidden;
-  background: var(--white);
-  background-color: #080a09;
+  background: var(--page);
   transition:
     transform var(--ease-fast),
     box-shadow var(--ease-fast);
 }
+:root[data-theme='dark'] .product-card {
+  padding: 0;
+  background: transparent;
+}
+
 .product-card:hover {
   transform: translateY(-4px);
-  box-shadow: var(--shadow-lift);
+  background: var(--page);
+  box-shadow: none;
 }
 .product-image-wrap {
   position: relative;
