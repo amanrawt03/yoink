@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { adminApi } from '../api.js';
 import { formatCurrency } from '../utils/catalog.js';
 
@@ -33,6 +33,7 @@ export default function AdminProductsPage() {
   const [error, setError] = useState('');
   const [notice, setNotice] = useState('');
   const [busy, setBusy] = useState(false);
+  const formDialog = useRef(null);
   const load = async () => {
     setResult(null);
     const data = await adminApi.products({ page, limit: 12 });
@@ -45,6 +46,12 @@ export default function AdminProductsPage() {
       .then(setCategories)
       .catch(() => setError('Unable to load product categories.'));
   }, [page]);
+  useEffect(() => {
+    const dialog = formDialog.current;
+    if (!dialog) return;
+    if (formOpen && !dialog.open) dialog.showModal();
+    if (!formOpen && dialog.open) dialog.close();
+  }, [formOpen]);
   const startEdit = (product) => {
     setEditing(product?._id || null);
     setForm(product ? asForm(product) : emptyForm);
@@ -137,9 +144,25 @@ export default function AdminProductsPage() {
           {error}
         </p>
       )}
-      {formOpen && (
+      <dialog
+        className="admin-product-dialog"
+        ref={formDialog}
+        aria-labelledby="admin-product-dialog-title"
+        onClose={() => setFormOpen(false)}
+        onCancel={() => setFormOpen(false)}
+      >
         <form className="admin-product-form" onSubmit={submit}>
-          <h3>{editing ? 'Edit product' : 'Create product'}</h3>
+          <div className="admin-product-form-heading">
+            <h3 id="admin-product-dialog-title">{editing ? 'Edit product' : 'Create product'}</h3>
+            <button
+              className="admin-product-dialog-close"
+              type="button"
+              aria-label="Close product form"
+              onClick={() => setFormOpen(false)}
+            >
+              ×
+            </button>
+          </div>
           <label>
             Name
             <input
@@ -240,7 +263,7 @@ export default function AdminProductsPage() {
             </button>
           </div>
         </form>
-      )}
+      </dialog>
       {!result && !error && <p role="status">Loading products…</p>}
       {result?.products.length === 0 && <p className="notice">No products found.</p>}
       {!!result?.products.length && (

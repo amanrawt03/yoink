@@ -38,6 +38,7 @@ test('order schema limits statuses and requires historical item snapshots with p
     totalAmount: 24,
   });
   assert.equal(order.paymentStatus, 'pending');
+  assert.equal(order.paymentMethod, 'cod');
   assert.equal(order.status, 'pending');
   await assert.doesNotReject(order.validate());
   order.status = 'unknown';

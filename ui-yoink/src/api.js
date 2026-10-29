@@ -59,6 +59,18 @@ export const orderApi = {
       )
     ).data.order;
   },
+  async createRazorpayOrder(shippingAddress, idempotencyKey) {
+    return (
+      await api.post(
+        '/api/orders/razorpay',
+        { shippingAddress },
+        { headers: { 'Idempotency-Key': idempotencyKey } },
+      )
+    ).data;
+  },
+  async verifyRazorpayPayment(payment) {
+    return (await api.post('/api/orders/razorpay/verify', payment)).data.order;
+  },
   async myOrders() {
     return (await api.get('/api/orders/my-orders')).data.orders;
   },

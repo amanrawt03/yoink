@@ -8,10 +8,13 @@ import {
   updateOrderStatus,
 } from '../controllers/orderController.js';
 import { authorize, protect } from '../middleware/auth.js';
+import { createRazorpayOrder, verifyRazorpayPayment } from '../controllers/razorpayController.js';
 
 const router = Router();
 router.use(protect);
 router.post('/', createOrder);
+router.post('/razorpay', createRazorpayOrder);
+router.post('/razorpay/verify', verifyRazorpayPayment);
 router.get('/my-orders', getMyOrders);
 router.get('/', authorize('admin'), getAllOrders);
 router.patch('/:id/status', authorize('admin'), updateOrderStatus);

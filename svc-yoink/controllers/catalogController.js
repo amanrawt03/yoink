@@ -14,6 +14,7 @@ export function parseProductQuery(query) {
     maxPrice,
     sortBy = 'newest',
     order = 'desc',
+    featured,
     page = '1',
     limit = '12',
   } = query;
@@ -29,6 +30,8 @@ export function parseProductQuery(query) {
   if (!Object.hasOwn(SORTS, sortBy))
     throw new Error('sortBy must be price, rating, name, or newest.');
   if (!['asc', 'desc'].includes(order)) throw new Error('order must be asc or desc.');
+  if (featured !== undefined && !['true', 'false'].includes(featured))
+    throw new Error('featured must be true or false.');
   if (search !== undefined && (typeof search !== 'string' || search.trim().length > 100))
     throw new Error('Search must be at most 100 characters.');
   if (category !== undefined && !mongoose.isValidObjectId(category))
@@ -46,6 +49,7 @@ export function parseProductQuery(query) {
   if (price.$gte !== undefined && price.$lte !== undefined && price.$gte > price.$lte)
     throw new Error('minPrice cannot exceed maxPrice.');
   const filter = { isActive: true };
+  if (featured !== undefined) filter.featured = featured === 'true';
   if (search?.trim()) filter.$text = { $search: search.trim() };
   if (category) filter.category = new mongoose.Types.ObjectId(category);
   if (Object.keys(price).length) filter.price = price;

@@ -111,6 +111,7 @@ export async function createOrder(req, res, next) {
             totalAmount,
             status: 'pending',
             paymentStatus: 'pending',
+            paymentMethod: 'cod',
             idempotencyKey: key,
           },
         ],
