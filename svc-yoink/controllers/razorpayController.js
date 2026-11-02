@@ -172,32 +172,87 @@ export async function verifyRazorpayPayment(req, res, next) {
     return res.status(400).json({ message: 'Razorpay payment signature is invalid.' });
 
   try {
-    const order = await Order.findOne({
-      _id: applicationOrderId,
-      user: req.user._id,
-      paymentMethod: 'razorpay',
-      razorpayOrderId: razorpay_order_id,
-    });
-    if (!order) return res.status(404).json({ message: 'Payment order not found.' });
-    if (order.paymentStatus === 'paid') {
-      if (order.paymentId !== razorpay_payment_id)
-        return res.status(409).json({ message: 'A different payment is already recorded.' });
-      return res.json({ order });
+    const session = await mongoose.startSession();
+    let verifiedOrder;
+    let failure;
+    const unavailableItems = [];
+    try {
+      await session.withTransaction(async () => {
+        verifiedOrder = undefined;
+        failure = undefined;
+        unavailableItems.length = 0;
+        const order = await Order.findOne({
+          _id: applicationOrderId,
+          user: req.user._id,
+          paymentMethod: 'razorpay',
+          razorpayOrderId: razorpay_order_id,
+        }).session(session);
+        if (!order) {
+          failure = { status: 404, message: 'Payment order not found.' };
+          return;
+        }
+        if (order.paymentStatus === 'paid') {
+          if (order.paymentId !== razorpay_payment_id)
+            failure = { status: 409, message: 'A different payment is already recorded.' };
+          else verifiedOrder = order;
+          return;
+        }
+        if (order.status === 'cancelled' || order.paymentStatus !== 'pending') {
+          failure = { status: 409, message: 'This order cannot be marked as paid.' };
+          return;
+        }
+
+        for (const item of order.items) {
+          const result = await Product.updateOne(
+            { _id: item.product, isActive: true, stock: { $gte: item.quantity } },
+            { $inc: { stock: -item.quantity } },
+            { session },
+          );
+          if (result.modifiedCount !== 1) {
+            // The gateway has already charged the customer. Preserve that payment record and
+            // surface the inventory conflict for manual fulfillment/refund follow-up.
+            unavailableItems.push(item.name);
+          }
+        }
+
+        verifiedOrder = await Order.findOneAndUpdate(
+          { _id: order._id, paymentStatus: 'pending', status: { $ne: 'cancelled' } },
+          { $set: { paymentStatus: 'paid', paymentId: razorpay_payment_id } },
+          { new: true, runValidators: true, session },
+        );
+        if (!verifiedOrder) {
+          failure = { status: 409, message: 'This order cannot be marked as paid.' };
+          throw Object.assign(new Error(failure.message), { paymentConflict: true });
+        }
+
+        await Cart.updateOne(
+          { user: req.user._id },
+          { $set: { items: [] } },
+          { session },
+        );
+      });
+    } catch (error) {
+      if (!error.paymentConflict) throw error;
+    } finally {
+      await session.endSession();
     }
-    if (order.status === 'cancelled' || order.paymentStatus !== 'pending')
-      return res.status(409).json({ message: 'This order cannot be marked as paid.' });
-
-    const verifiedOrder = await Order.findOneAndUpdate(
-      { _id: order._id, paymentStatus: 'pending', status: { $ne: 'cancelled' } },
-      { $set: { paymentStatus: 'paid', paymentId: razorpay_payment_id } },
-      { new: true, runValidators: true },
-    );
-    if (!verifiedOrder)
-      return res.status(409).json({ message: 'This order cannot be marked as paid.' });
-
-    await Cart.findOneAndUpdate({ user: req.user._id }, { $set: { items: [] } });
-    return res.json({ order: verifiedOrder });
+    if (failure) return res.status(failure.status).json({ message: failure.message });
+    return res.json({
+      order: verifiedOrder,
+      ...(unavailableItems.length
+        ? { inventoryWarning: `Stock needs review for: ${unavailableItems.join(', ')}.` }
+        : {}),
+    });
   } catch (error) {
+    if (
+      /Transaction numbers are only allowed|replica set|mongos|does not support transactions/i.test(
+        error.message || '',
+      )
+    ) {
+      return res
+        .status(503)
+        .json({ message: 'Payment confirmation requires MongoDB transaction support.' });
+    }
     return next(error);
   }
 }
